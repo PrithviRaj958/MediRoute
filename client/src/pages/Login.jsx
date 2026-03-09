@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import { Link } from "react-router-dom";
 import "../Login.css";
 
 const Login = () => {
@@ -12,7 +12,6 @@ const Login = () => {
     const [message, setMessage] = useState("");
     const [error, setError] = useState("");
 
-    const navigate = useNavigate();
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -31,7 +30,9 @@ const Login = () => {
             );  
             setMessage(res.data.message);
             localStorage.setItem("token", res.data.token);
-            navigate("/dashboard");
+            localStorage.setItem("role", res.data.user.role);
+            // Redirect based on user role
+            window.location.href = "/dashboard";
         }
         catch (err) {
             setError(err.response?.data?.message || "Login failed");

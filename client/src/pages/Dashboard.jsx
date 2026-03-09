@@ -1,22 +1,32 @@
-import React from "react";
+import React,{useEffect }from "react";
 import { useNavigate } from "react-router-dom";
 
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    // To log out, we just throw away the "Key Card"
-    localStorage.removeItem("token");
-    navigate("/login");
-  };
+  useEffect(() => {
+    const role = localStorage.getItem("role");
+
+    const timer = setTimeout(() => {
+    if (role === "OPERATOR") {
+      navigate("/operator");
+    } else if (role === "ADMIN") {
+      navigate("/admin");
+    } else if(role === "DRIVER") {
+      navigate("/driver");
+    } else {
+      navigate("/login");
+    } 
+  },2000);
+  return () => clearTimeout(timer);
+  }, [navigate]);
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>🚑 MediRoute Dashboard</h1>
       <p>Welcome! You are successfully logged in.</p>
-      <button onClick={handleLogout} style={{ padding: "10px", cursor: "pointer" }}>
-        Logout
-      </button>
+      <div style={{ textAlign: "center", marginTop: "50px" }}>
+      <h2>Redirecting to your MediRoute workspace...</h2>
+    </div>
     </div>
   );
 };
