@@ -44,10 +44,9 @@ const Login = () => {
         {message && <p className="success-message">{message}</p>}
         {error && <p className="error-message">{error}</p>}
         
-        {/* Added className="login-form" */}
         <form onSubmit={handleSubmit} className="login-form">
             <input
-                className="login-input" // Added className
+                className="login-input" 
                 type="email"
                 name="email"
                 placeholder="Email"
@@ -55,14 +54,14 @@ const Login = () => {
                 onChange={handleChange}
             />
             <input
-                className="login-input" // Added className
+                className="login-input" 
                 type="password"
                 name="password"
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
             />
-            <button type="submit" className="login-button">Login</button> {/* Added className */}
+            <button type="submit" className="login-button">Login</button>
         </form>
         <div className="redirect-link">
                 <p>New user? <Link to="/register">Register here</Link></p>
