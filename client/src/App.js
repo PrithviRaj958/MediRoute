@@ -2,6 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
+import AmbulanceManagement from "./pages/AmbulanceManagement";
 import Dashboard from "./pages/Dashboard.jsx";
 import ProtectedRoute from "./components/ProctectedRoute.jsx";
 
@@ -33,6 +34,8 @@ function App() {
             <OperatorPanel />
           </ProtectedRoute>
         } />
+        
+        <Route path="/ambulances" element={<AmbulanceManagement />} />
         
         <Route path="/admin" element={
           <ProtectedRoute allowedRoles="HOSPITAL_ADMIN">
