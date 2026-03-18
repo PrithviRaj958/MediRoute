@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { createHospital, updateBeds, getHospitals } = require('../controllers/hospital.controller');   
+const { createHospital, updateBeds, getHospitals, getMyHospital } = require('../controllers/hospital.controller');   
 const { authMiddleware, authorize } = require('../middlewares/auth.middleware');
 
-router.post('/create',authMiddleware,authorize("HOSPITAL_ADMIN","ADMIN"), createHospital);
-router.put('/update-beds/:id', authMiddleware,authorize("HOSPITAL_ADMIN","ADMIN"),updateBeds);
+router.post('/create', authMiddleware, authorize('ADMIN','HOSPITAL_ADMIN'), createHospital);
+router.put('/update-beds',authMiddleware,updateBeds);
 router.get('/nearby', getHospitals);
+router.get('/my-hospital', authMiddleware, getMyHospital);
 
 module.exports =router ;

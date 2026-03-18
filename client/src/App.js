@@ -3,11 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
-import ProtectedRoute from "./components/ProctectedRoute.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import HospitalPanel from "./pages/HospitalPanel.jsx";
 
 const DriverPanel = () => <h1>Driver Panel</h1>;
 const OperatorPanel = () => <h1>Operator Panel</h1>;
-const AdminPanel = () => <h1>Admin Panel</h1>;
 
 function App() {
   return (
@@ -34,9 +34,9 @@ function App() {
           </ProtectedRoute>
         } />
         
-        <Route path="/admin" element={
+        <Route path="/hospital-admin" element={
           <ProtectedRoute allowedRoles="HOSPITAL_ADMIN">
-            <AdminPanel />
+            <HospitalPanel />
           </ProtectedRoute>
         } />
 
