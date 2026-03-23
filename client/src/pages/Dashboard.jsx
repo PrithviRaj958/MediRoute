@@ -6,12 +6,18 @@ const Dashboard = () => {
 
   useEffect(() => {
     const role = localStorage.getItem("role");
+    const hospitalId = localStorage.getItem("hospitalId");
 
     const timer = setTimeout(() => {
     if (role === "OPERATOR") {
       navigate("/operator");
-    } else if (role === "ADMIN") {
-      navigate("/admin");
+    } else if (role === "HOSPITAL_ADMIN") {
+      if(!hospitalId) {
+        console.error("No hospital linked to this admin account.");
+        navigate("/login");
+      }else{
+        navigate("/hospital-admin");
+      }
     } else if(role === "DRIVER") {
       navigate("/driver");
     } else {

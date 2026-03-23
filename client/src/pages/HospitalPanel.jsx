@@ -1,0 +1,144 @@
+import {useState, useEffect} from 'react';
+import axios from 'axios';
+import '../HospitalPanel.css';
+import { initiateSocketConnection, disconnectSocket, subscribeToEmergencies, acceptEmergencyhandshake, getSocket } from '../services/socketService';
+
+const HospitalPanel = () =>{
+    const [hospital, setHospital] = useState(null);
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(true);
+    const [updateValue, setUpdateValue] = useState(1);  
+    const [incomingEmergency, setIncomingEmergency] = useState(null);
+
+    useEffect( () => {
+        const fetchHospital = async () =>{
+            try {
+                const token = localStorage.getItem("token");
+                const res = await axios.get("http://localhost:5000/api/hospital-admin/nearest",{
+                    headers: {Authorization: `Bearer ${token}` }
+                })
+                const hospitalData = res.data.hospitals[0];
+                setHospital(hospitalData);
+                setLoading(false);  
+
+                if(hospitalData?._id) {
+                    initiateSocketConnection(hospitalData._id);
+                    subscribeToEmergencies((data) => {
+                        console.log('Real-time alert received ', data);
+                        setIncomingEmergency(data);
+                    });
+                }
+            }catch (err) {
+                setError("Failed to fetch hospital data");
+                setLoading(false);
+            }
+        }
+        fetchHospital();
+        return () => disconnectSocket();
+    }, []);
+
+    const handleUpdate = async (action , customValue=null) => {
+        try {
+            const token = localStorage.getItem("token");
+            const amount = customValue || updateValue;
+            const res = await axios.put(`http://localhost:5000/api/hospital-admin/update-beds/${hospital._id}`, 
+                { action , availableBeds: amount }, {
+                headers: {Authorization: `Bearer ${token}` }
+            });
+            setHospital(res.data.hospital);
+        } catch (err) {
+            setError("Failed to update bed availability");
+        }
+    };
+
+    const handleAccepthandshake = async() => {
+      acceptEmergencyhandshake(incomingEmergency.requestId, hospital._id);
+      handleUpdate('decrement', 1); 
+      alert("Handshake Accepted!");
+      setIncomingEmergency(null);
+    };
+
+    const handleDeclinehandshake = () => {
+      const socket = getSocket();
+      if(socket) {
+        socket.emit("hospital_decline_handshake", { 
+          requestId: incomingEmergency.requestId,
+          hospitalId: hospital._id
+        });
+      }
+      setIncomingEmergency(null);
+    };
+
+    if (loading) return <div className="loader">Loading Dashboard...</div>;
+  if (error) return <div className="error-msg">{error}</div>;
+
+    return (
+        <div className="admin-container">
+          {incomingEmergency && (
+                <div className="emergency-modal-overlay">
+                    <div className="emergency-modal">
+                        <h2>🚨 EMERGENCY REQUEST</h2>
+                        <div className="patient-info">
+                            <p><strong>Patient:</strong> {incomingEmergency.patientName}</p>
+                            <p><strong>Severity:</strong> {incomingEmergency.severity}</p>
+                        </div>
+                        <div className="handshake-buttons">
+                            <button className="btn btn-accept" disabled={hospital?.availableBeds <= 0}  onClick={handleAccepthandshake} style={{ 
+                                        opacity: hospital?.availableBeds <= 0 ? 0.5 : 1,
+                                        cursor: hospital?.availableBeds <= 0 ? 'not-allowed' : 'pointer' 
+                                      }}>
+                                {hospital?.availableBeds <= 0 ? "No Beds Available" : "Accept & Reserve Bed"}
+                            </button>
+                            <button className="btn btn-decline" onClick={handleDeclinehandshake}>
+                                Decline
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            <header className="admin-header">
+            <h1>MediRoute Admin</h1>
+            <div className="hospital-badge">{hospital?.name}</div>
+            </header>
+
+         <main className="dashboard-grid">
+        <section className="stats-card">
+          <h3>Bed Occupancy</h3>
+          <div className="bed-display">
+            <span className="count">{hospital?.availableBeds}</span>
+            <span className="label">Available / {hospital?.totalBeds} Total</span>
+          </div>
+          <div className="progress-bar">
+            <div 
+              className="progress-fill" 
+              style={{ width: `${(hospital?.availableBeds / hospital?.totalBeds) * 100}%` }}
+            ></div>
+          </div>
+        </section>
+
+        <section className="control-card">
+          <h3>Update Availability</h3>
+          <div className="input-group">
+            <label>Quantity</label>
+            <input 
+              type="number" 
+              value={updateValue} 
+              onChange={(e) => setUpdateValue(e.target.value)}
+              min="1"
+            />
+          </div>
+          <div className="button-group">
+            <button className="btn btn-add" onClick={() => handleUpdate('increment')}>
+              Add Beds
+            </button>
+            <button className="btn btn-remove" onClick={() => handleUpdate('decrement')}>
+              Remove Beds
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+    )
+}
+
+export default HospitalPanel;

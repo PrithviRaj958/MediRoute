@@ -37,7 +37,7 @@ exports.createHospital = async(req , res) => {
 
 exports.updateBeds = async(req, res) =>{
     try {
-        const id = req.params.id ;
+        const id = req.user.hospitalId;
         const availableBeds = req.body.availableBeds ;
         const action = req.body.action;
         if( availableBeds <= 0){
@@ -93,3 +93,13 @@ exports.getHospitals = async(req, res) => {
         res.status(500).json({message :error.message});
     }
 }
+
+exports.getMyHospital = async (req, res) => {
+  try {
+    const hospital = await Hospital.findById(req.user.hospitalId);
+    if (!hospital) return res.status(404).json({ message: "Hospital not found" });
+    res.status(200).json(hospital);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
