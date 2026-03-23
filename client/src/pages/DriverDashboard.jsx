@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
+import { emitDriverLocation,initiateSocketConnection } from "../services/socketService";  
 
 function DriverDashboard() {
   const [ambulance, setAmbulance] = useState(null);
@@ -7,6 +8,9 @@ function DriverDashboard() {
   const [lat, setLat] = useState("");
 
   const token = localStorage.getItem("token");
+  useEffect(() => {
+    initiateSocketConnection(); 
+}, []);
 
   // 🔹 Fetch ambulance assigned to driver
 const fetchAmbulance = useCallback(async () => {
@@ -30,20 +34,21 @@ const fetchAmbulance = useCallback(async () => {
   // 🔹 Update ambulance location
   const updateLocation = async () => {
     try {
+      const payload = {
+        ambulanceId: ambulance._id,
+        lng: parseFloat(lng),
+        lat: parseFloat(lat),
+        hospitalId: ambulance.assignedHospitalId || localStorage.getItem("activeHospitalId")
+      };
       await axios.put(
-        "http://localhost:5000/api/ambulances/location",
-        {
-          ambulanceId: ambulance._id,
-          lng: parseFloat(lng),
-          lat: parseFloat(lat)
-        },
+        "http://localhost:5000/api/ambulances/location",payload,
         {
           headers: {
             Authorization: `Bearer ${token}`
           }
         }
       );
-
+      emitDriverLocation(payload); // Notify server of location change
       fetchAmbulance(); // refresh data
 
     } catch (err) {

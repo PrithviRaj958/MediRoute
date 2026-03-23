@@ -31,4 +31,18 @@ export const acceptEmergencyhandshake = (requestId, hospitalId) => {
     }
 };
 
+export const emitDriverLocation = (data) => {
+    if(socket){
+        socket.emit('driver_location_update',data);
+    }
+};
+
+export const subscribeToAmbulanceMovement = (callback) => {
+    if(!socket) return;
+    socket.on('ambulance_moved', (coords) => {
+        console.log('Ambulance movement received');
+        callback(coords);
+    });
+};
+
 export const getSocket = () => socket;

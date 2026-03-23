@@ -40,6 +40,12 @@ io.on("connection",(socket) =>{
     socket.on("disconnect", () =>{
         console.log(`User disconnected: ${socket.id}`);
     });
+
+    socket.on("driver_location_update", (data) => {
+        const { hospitalId, lat, lng, ambulanceId } = data;
+        console.log(`Relaying location for Ambulance ${ambulanceId} to Hospital ${hospitalId}`);
+        io.to(hospitalId).emit("ambulance_moved", { lat, lng, ambulanceId });
+    });
 })
 
 server.listen(PORT, () =>{
