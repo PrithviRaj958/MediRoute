@@ -9,26 +9,30 @@ const HospitalPanel = () =>{
     const [loading, setLoading] = useState(true);
     const [updateValue, setUpdateValue] = useState(1);  
     const [incomingEmergency, setIncomingEmergency] = useState(null);
+    const [successMsg, setSuccessMsg] = useState("");
 
     useEffect( () => {
         const fetchHospital = async () =>{
             try {
                 const token = localStorage.getItem("token");
-                const res = await axios.get("http://localhost:5000/api/hospital-admin/nearest",{
+                const res = await axios.get("http://localhost:5000/api/hospitals/my-hospital",{
                     headers: {Authorization: `Bearer ${token}` }
                 })
-                const hospitalData = res.data.hospitals[0];
-                setHospital(hospitalData);
-                setLoading(false);  
+                const hospitalData = res.data;
 
-                if(hospitalData?._id) {
+                if(hospitalData &&hospitalData._id) {
+                    setHospital(hospitalData);
+                    setLoading(false);
                     initiateSocketConnection(hospitalData._id);
                     subscribeToEmergencies((data) => {
                         console.log('Real-time alert received ', data);
                         setIncomingEmergency(data);
                     });
+                }else{
+                  throw new Error("Hospital data is empty or invalid");
                 }
             }catch (err) {
+                console.error("Fetch Error:", err);
                 setError("Failed to fetch hospital data");
                 setLoading(false);
             }
@@ -40,22 +44,26 @@ const HospitalPanel = () =>{
     const handleUpdate = async (action , customValue=null) => {
         try {
             const token = localStorage.getItem("token");
-            const amount = customValue || updateValue;
-            const res = await axios.put(`http://localhost:5000/api/hospital-admin/update-beds/${hospital._id}`, 
+            const amount = Number(customValue || updateValue);
+            const res = await axios.put(`http://localhost:5000/api/hospitals/update-beds`, 
                 { action , availableBeds: amount }, {
                 headers: {Authorization: `Bearer ${token}` }
             });
             setHospital(res.data.hospital);
         } catch (err) {
             setError("Failed to update bed availability");
+            setTimeout(() => setError(""), 3000);
         }
     };
 
     const handleAccepthandshake = async() => {
       acceptEmergencyhandshake(incomingEmergency.requestId, hospital._id);
-      handleUpdate('decrement', 1); 
-      alert("Handshake Accepted!");
+      await handleUpdate('decrement', 1); 
       setIncomingEmergency(null);
+      setSuccessMsg("✅ Emergency Accepted. Bed Reserved successfully!");
+      setTimeout(() => {
+        setSuccessMsg("");
+    }, 3000);
     };
 
     const handleDeclinehandshake = () => {
@@ -74,6 +82,11 @@ const HospitalPanel = () =>{
 
     return (
         <div className="admin-container">
+          {successMsg && (
+              <div className="success-banner">
+                    {successMsg}
+              </div>
+          )}
           {incomingEmergency && (
                 <div className="emergency-modal-overlay">
                     <div className="emergency-modal">
