@@ -31,6 +31,7 @@ const Login = () => {
             setMessage(res.data.message);
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("role", res.data.user.role);
+            localStorage.setItem("hospitalId", res.data.user.hospitalId || "");
             // Redirect based on user role
             window.location.href = "/dashboard";
         }

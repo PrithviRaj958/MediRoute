@@ -4,9 +4,11 @@ import Register from "./pages/Register.jsx";
 import Login from "./pages/Login.jsx";
 import AmbulanceManagement from "./pages/AmbulanceManagement";
 import Dashboard from "./pages/Dashboard.jsx";
-import ProtectedRoute from "./components/ProctectedRoute.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import DriverDashboard from "./pages/DriverDashboard";
+import TrackAmbulance from "./pages/TrackAmbulance";
+import EmergencyPage from "./pages/EmergencyPage";
 
-const DriverPanel = () => <h1>Driver Panel</h1>;
 const OperatorPanel = () => <h1>Operator Panel</h1>;
 const AdminPanel = () => <h1>Admin Panel</h1>;
 
@@ -25,7 +27,7 @@ function App() {
         
         <Route path="/driver" element={
           <ProtectedRoute allowedRoles="DRIVER">
-            <DriverPanel />
+            <DriverDashboard />
           </ProtectedRoute>
         } />
 
@@ -37,6 +39,9 @@ function App() {
         
         <Route path="/ambulances" element={<AmbulanceManagement />} />
         
+        <Route path="/emergency" element={<EmergencyPage />} />
+
+        <Route path="/track" element={<TrackAmbulance />} />
         <Route path="/admin" element={
           <ProtectedRoute allowedRoles="HOSPITAL_ADMIN">
             <AdminPanel />

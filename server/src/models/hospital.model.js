@@ -7,6 +7,8 @@ const hospitalSchema = new mongoose.Schema(
             required:true,
             trim:true
         },
+
+        
         address : {
             type :String,
             required:true,

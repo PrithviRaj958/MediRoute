@@ -20,6 +20,40 @@ exports.createAmbulance = async (req, res) => {
   }
 };
 
+exports.updateStatus = async (req, res) => {
+  try {
+    const { ambulanceId, status } = req.body;
+
+    const ambulance = await Ambulance.findByIdAndUpdate(
+      ambulanceId,
+      { status },
+      { new: true }
+    );
+
+    res.json(ambulance);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+exports.getMyAmbulance = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    const ambulance = await Ambulance.findOne({ driverId: userId });
+
+    if (!ambulance) {
+      return res.status(404).json({ message: "No ambulance assigned" });
+    }
+
+    res.json(ambulance);
+
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}; 
+
 
 exports.getAmbulances = async (req, res) => {
   try {

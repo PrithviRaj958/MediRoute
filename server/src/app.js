@@ -13,6 +13,7 @@ app.use(express.json());
 app.use("/api/ambulances", ambulanceRoutes);
 app.use("/api/auth", require("./routes/auth.routes"));
 app.use("/api/hospitals", require("./routes/hospital.routes"));
+app.use("/api/emergencies", require("./routes/emergency.routes"));
 app.get("/", (req, res) => {
   res.send("MediRoute Backend Running");
 });
