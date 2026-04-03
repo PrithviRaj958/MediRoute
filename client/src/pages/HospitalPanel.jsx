@@ -80,7 +80,7 @@ const HospitalPanel = () => {
 
     const handleAccepthandshake = async () => {
         if (!incomingEmergency) return;
-        
+        localStorage.setItem("emergencyId", incomingEmergency.requestId);
         // Trigger socket handshake
         acceptEmergencyhandshake(incomingEmergency.requestId, hospital._id);
         

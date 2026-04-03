@@ -1,0 +1,196 @@
+/* Keyframes for Futuristic Animations */
+@keyframes dashboard-pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+@keyframes dashboard-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes dashboard-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes dashboard-fadeInOut {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+/* Container & Layout */
+.dashboard-root {
+  min-height: 100vh;
+  background-color: #050b18;
+  color: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.dashboard-blob-1 {
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  width: 40%;
+  height: 40%;
+  background-color: rgba(37, 99, 235, 0.2);
+  border-radius: 50%;
+  filter: blur(120px);
+  animation: dashboard-pulse 4s infinite ease-in-out;
+}
+
+.dashboard-blob-2 {
+  position: absolute;
+  bottom: -10%;
+  right: -10%;
+  width: 40%;
+  height: 40%;
+  background-color: rgba(16, 185, 129, 0.1);
+  border-radius: 50%;
+  filter: blur(120px);
+  animation: dashboard-pulse 4s infinite ease-in-out 1s;
+}
+
+.dashboard-grid-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.05;
+  background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* The Glassmorphism Card */
+.dashboard-card {
+  position: relative;
+  z-index: 10;
+  width: 90%;
+  max-width: 400px;
+  background-color: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.dashboard-logo-container {
+  width: 80px;
+  height: 80px;
+  margin: 0 auto 24px;
+  background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 30px rgba(59, 130, 246, 0.4);
+  animation: dashboard-bounce 2s infinite ease-in-out;
+}
+
+.dashboard-title {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  background: linear-gradient(to right, #60a5fa, #34d399);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0;
+}
+
+.dashboard-subtitle {
+  color: #94a3b8;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  margin-top: 8px;
+}
+
+/* Progress & Loading State */
+.dashboard-status-text {
+  font-size: 18px;
+  font-weight: 500;
+  color: #e2e8f0;
+  margin: 32px 0 0 0;
+}
+
+.dashboard-role-text {
+  font-size: 14px;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.dashboard-progress-track {
+  width: 100%;
+  height: 6px;
+  background-color: #1e293b;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 24px 0;
+  position: relative;
+}
+
+.dashboard-progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #06b6d4, #10b981);
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.6);
+  transition: width 0.1s ease-out;
+}
+
+/* Stats Grid */
+.dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.dashboard-stat-item {
+  background-color: rgba(255, 255, 255, 0.05);
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.dashboard-stat-label {
+  font-size: 10px;
+  color: #64748b;
+  text-transform: uppercase;
+}
+
+.dashboard-spinning-icon {
+  animation: dashboard-spin 2s linear infinite;
+}
+
+/* Redirection Protocol Info */
+.dashboard-redirect-info {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #34d399;
+  font-size: 14px;
+  font-weight: 600;
+  margin-top: 16px;
+  animation: dashboard-fadeInOut 1.5s infinite;
+}
+
+.dashboard-system-id {
+  position: absolute;
+  bottom: 32px;
+  color: #475569;
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
