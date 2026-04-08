@@ -2,6 +2,7 @@ import "../Register.css";
 import React, { useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { Mail, Lock, HeartPulse, UserPlus, User, ShieldCheck, LogIn } from "lucide-react";
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -46,60 +47,92 @@ const Register = () => {
   };
 
   return (
-  <div className="register-container">
-    <div className="register-card">
-      <h2>Create Account</h2>
+  <div className="clinical-register-root">
+      
 
-      {message && <p className="success-message">{message}</p>}
-      {error && <p className="error-message">{error}</p>}
+      <div className="clinical-grid"></div>
+      <div className="clinical-bg-accent accent-tl"></div>
+      <div className="clinical-bg-accent accent-br"></div>
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="name"
-          placeholder="Full Name"
-          value={formData.name}
-          onChange={handleChange}
-          required
-        />
+      <div className="register-card">
+        <div className="register-icon-box">
+          <HeartPulse size={34} />
+        </div>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email Address"
-          value={formData.email}
-          onChange={handleChange}
-          required
-        />
+        <div className="register-header">
+          <h2 className="register-title">Create Account</h2>
+          <p className="register-subtitle">Register new credentials with MediRoute</p>
+        </div>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-          required
-        />
+        {message && <div className="success-message">{message}</div>}
+        {error && <div className="error-message">{error}</div>}
 
-        <select
-          name="role"
-          value={formData.role}
-          onChange={handleChange}
-        >
-          <option value="OPERATOR">Operator</option>
-          <option value="DRIVER">Driver</option>
-          <option value="HOSPITAL_ADMIN">Hospital Admin</option>
-        </select>
+        <form onSubmit={handleSubmit} className="register-form">
+          <div className="input-group">
+            <User size={18} className="input-icon" />
+            <input
+              className="clinical-input"
+              type="text"
+              name="name"
+              placeholder="Full Name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
-        <button type="submit">Register</button>
-      </form>
-      <div className="redirect-link">
+          <div className="input-group">
+            <Mail size={18} className="input-icon" />
+            <input
+              className="clinical-input"
+              type="email"
+              name="email"
+              placeholder="Email ID"
+              value={formData.email}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="input-group">
+            <Lock size={18} className="input-icon" />
+            <input
+              className="clinical-input"
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+            />
+          </div>
+
+          <div className="input-group">
+            <ShieldCheck size={18} className="input-icon" />
+            <select
+              className="clinical-select"
+              name="role"
+              value={formData.role}
+              onChange={handleChange}
+            >
+              <option value="OPERATOR">Operator</option>
+              <option value="DRIVER">Driver</option>
+              <option value="HOSPITAL_ADMIN">Hospital Admin</option>
+            </select>
+          </div>
+
+          <button type="submit" className="register-button">
+            Register Account <UserPlus size={18} />
+          </button>
+        </form>
+
+        <div className="redirect-link">
           <p>
-            Already have an account? <Link to="/login">Login here</Link>
+            Already have a account? <Link to="/login">Login <LogIn size={14} style={{ marginLeft: '2px' }} /></Link>
           </p>
         </div>
+      </div>
     </div>
-  </div>
 );
 };
 

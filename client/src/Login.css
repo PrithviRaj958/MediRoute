@@ -1,119 +1,220 @@
-@keyframes login-pulse {
-          0%, 100% { opacity: 0.5; transform: scale(1); }
-          50% { opacity: 0.8; transform: scale(1.1); }
-        }
-        @keyframes login-fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+/* Keyframes for Medical Interface */
+@keyframes float {
+0%, 100% { transform: translateY(0px); }
+50% { transform: translateY(-10px); }
+}
 
-        /* Layout */
-        .login-root {
-          min-height: 100vh;
-          background-color: #050b18;
-          color: #f1f5f9;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          overflow: hidden;
-          position: relative;
-          font-family: system-ui, -apple-system, sans-serif;
-        }
+@keyframes pulse-soft {
+0%, 100% { opacity: 0.1; transform: scale(1); }
+50% { opacity: 0.2; transform: scale(1.1); }
+}
 
-        .login-blob-1, .login-blob-2 {
-          position: absolute;
-          width: 45%;
-          height: 45%;
-          border-radius: 50%;
-          filter: blur(120px);
-          animation: login-pulse 6s infinite ease-in-out;
-        }
-        .login-blob-1 { top: -10%; right: -10%; background-color: rgba(37, 99, 235, 0.15); }
-        .login-blob-2 { bottom: -10%; left: -10%; background-color: rgba(16, 185, 129, 0.1); animation-delay: 2s; }
+/* Root Container */
+.clinical-root, .clinical-login-root, .clinical-register-root {
+min-height: 100vh;
+background-color: #f0f4f8;
+color: #1e293b;
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+position: relative;
+font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
 
-        .login-grid-overlay {
-          position: absolute;
-          inset: 0;
-          pointer-events: none;
-          opacity: 0.03;
-          background-image: linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px);
-          background-size: 40px 40px;
-        }
+/* Background Accents */
+.clinical-bg-accent {
+position: absolute;
+width: 600px;
+height: 600px;
+background: radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, transparent 70%);
+border-radius: 50%;
+filter: blur(60px);
+z-index: 1;
+}
 
-        .login-card {
-          position: relative;
-          z-index: 10;
-          width: 90%;
-          max-width: 420px;
-          background-color: rgba(255, 255, 255, 0.03);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(20px);
-          border-radius: 28px;
-          padding: 40px;
-          box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
-          animation: login-fadeInUp 0.8s ease-out;
-        }
+.accent-tr { top: -150px; right: -150px; }
+.accent-bl { bottom: -150px; left: -150px; }
 
-        .login-header { text-align: center; margin-bottom: 32px; }
-        .login-title {
-          font-size: 32px; font-weight: 800;
-          background: linear-gradient(to right, #60a5fa, #34d399);
-          -webkit-background-clip: text; background-clip: text;
-          -webkit-text-fill-color: transparent; margin: 0;
-        }
-        .login-subtitle { color: #64748b; font-size: 14px; margin-top: 8px; }
+.clinical-grid {
+position: absolute;
+inset: 0;
+opacity: 0.3;
+background-image:
+linear-gradient(#e2e8f0 1px, transparent 1px),
+linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+background-size: 30px 30px;
+z-index: 0;
+}
 
-        /* FIXED INPUT STYLES */
-        .login-form { display: flex; flex-direction: column; gap: 20px; }
+/* Main Card (Glassmorphism) */
+.clinical-card, .login-card, .register-card {
+position: relative;
+z-index: 10;
+width: 90%;
+max-width: 440px;
+background: rgba(255, 255, 255, 0.85);
+backdrop-filter: blur(16px);
+border: 1px solid rgba(255, 255, 255, 0.6);
+border-radius: 32px;
+padding: 40px;
+box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05);
+text-align: center;
+}
 
-        .input-group {
-          display: flex;
-          align-items: center;
-          background-color: rgba(255, 255, 255, 0.05);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-          border-radius: 12px;
-          padding: 0 16px; /* Horizontal padding for the container */
-          transition: all 0.3s ease;
-        }
+/* Header Styling */
+.login-header, .register-header {
+text-align: center;
+margin-bottom: 32px;
+}
 
-        .input-group:focus-within {
-          border-color: #3b82f6;
-          background-color: rgba(255, 255, 255, 0.08);
-          box-shadow: 0 0 15px rgba(59, 130, 246, 0.2);
-        }
+.login-title, .register-title {
+font-size: 26px;
+font-weight: 700;
+color: #0f172a;
+margin: 0;
+}
 
-        .input-icon {
-          color: #475569;
-          margin-right: 12px; /* Physical space between icon and text */
-          flex-shrink: 0;
-        }
+.login-subtitle, .register-subtitle {
+color: #64748b;
+font-size: 14px;
+margin: 8px 0 0;
+}
 
-        .login-input {
-          flex: 1;
-          background: transparent;
-          border: none;
-          padding: 14px 0; /* Vertical padding only */
-          color: white;
-          font-size: 15px;
-          outline: none;
-          width: 100%;
-        }
+/* Form Layout */
+.login-form, .register-form {
+display: flex;
+flex-direction: column;
+gap: 20px;
+}
 
-        /* Placeholder color for better visibility */
-        .login-input::placeholder {
-          color: #475569;
-        }
+/* Input Group Logic - THE FIX FOR OVERLAP */
+.input-group {
+position: relative;
+display: flex;
+align-items: center;
+width: 100%;
+}
 
-        .login-button {
-          margin-top: 10px; padding: 14px; border-radius: 12px; border: none;
-          background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);
-          color: white; font-size: 16px; font-weight: 700; cursor: pointer;
-          transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
-        }
-        .login-button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+.input-group .input-icon {
+position: absolute;
+left: 20px; /* Position icon from left /
+top: 50%;
+transform: translateY(-50%);
+color: #94a3b8;
+z-index: 20; / Ensure icon is above input background /
+pointer-events: none; / User clicks through to input */
+}
 
-        .success-message { background: rgba(16, 185, 129, 0.1); color: #34d399; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
-        .error-message { background: rgba(239, 68, 68, 0.1); color: #f87171; padding: 12px; border-radius: 8px; margin-bottom: 20px; text-align: center; }
-        
-        .redirect-link { text-align: center; margin-top: 24px; font-size: 14px; color: #64748b; }
-        .redirect-link a { color: #60a5fa; text-decoration: none; font-weight: 600; margin-left: 4px;}
+
+.clinical-input,
+.clinical-select {
+display: block !important;
+width: 100% !important;
+height: 52px !important;
+padding: 0 16px 0 64px !important;
+background-color: #f8fafc !important;
+border: 1.5px solid #e2e8f0 !important;
+border-radius: 14px !important;
+color: #1e293b !important;
+font-size: 15px !important;
+outline: none !important;
+transition: all 0.2s ease;
+box-sizing: border-box !important; 
+}
+
+/* Ensure placeholder text also respects the padding */
+.clinical-input::placeholder {
+color: #94a3b8;
+opacity: 1;
+}
+
+.clinical-input:focus,
+.clinical-select:focus {
+border-color: #0ea5e9 !important;
+background-color: white !important;
+box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.08) !important;
+}
+
+/* Logo Icons */
+.login-icon-box, .register-icon-box {
+width: 64px;
+height: 64px;
+background: white;
+border-radius: 18px;
+display: flex;
+align-items: center;
+justify-content: center;
+margin: 0 auto 24px;
+box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.15);
+color: #0ea5e9;
+animation: float 4s infinite ease-in-out;
+}
+
+/* Action Buttons */
+.login-button, .clinical-button, .register-button {
+width: 100%;
+height: 52px;
+margin-top: 10px;
+border-radius: 14px;
+border: none;
+background: #0ea5e9;
+color: white;
+font-size: 16px;
+font-weight: 700;
+cursor: pointer;
+transition: 0.3s ease;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 10px;
+box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+}
+
+.login-button:hover, .clinical-button:hover, .register-button:hover {
+background: #0284c7;
+transform: translateY(-1px);
+box-shadow: 0 6px 18px rgba(14, 165, 233, 0.35);
+}
+
+/* Feedback Messages */
+.success-message, .msg.success {
+background-color: #f0fdf4;
+border: 1px solid #dcfce7;
+color: #16a34a;
+padding: 12px;
+border-radius: 12px;
+font-size: 13px;
+text-align: center;
+margin-bottom: 20px;
+}
+
+.error-message, .msg.err {
+background-color: #fef2f2;
+border: 1px solid #fee2e2;
+color: #ef4444;
+padding: 12px;
+border-radius: 12px;
+font-size: 13px;
+text-align: center;
+margin-bottom: 20px;
+}
+
+/* Footer Links */
+.redirect-link {
+text-align: center;
+margin-top: 24px;
+font-size: 14px;
+color: #64748b;
+}
+
+.redirect-link a {
+color: #0ea5e9;
+text-decoration: none;
+font-weight: 600;
+margin-left: 4px;
+}
+
+.redirect-link a:hover {
+text-decoration: underline;
+}

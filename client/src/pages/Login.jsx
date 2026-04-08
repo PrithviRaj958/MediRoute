@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Activity } from "lucide-react";
+import { Mail, Lock, HeartPulse, LogIn, UserPlus   } from "lucide-react";
 import "../Login.css";
 
 /**
@@ -51,29 +51,31 @@ const Login = () => {
   };
 
   return (
-    <div className="login-root">
-      {/* Visual Background Elements */}
-      <div className="login-blob-1"></div>
-      <div className="login-blob-2"></div>
-      <div className="login-grid-overlay"></div>
+    <div className="clinical-login-root">
+    
+
+      <div className="clinical-grid"></div>
+      <div className="clinical-bg-accent accent-tr"></div>
+      <div className="clinical-bg-accent accent-bl"></div>
 
       <div className="login-card">
-        <div className="login-header">
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}>
-            <Activity color="#60a5fa" size={32} />
-          </div>
-          <h2 className="login-title">Welcome Back</h2>
-          <p className="login-subtitle">Secure terminal access to MediRoute</p>
+        <div className="login-icon-box">
+          <HeartPulse size={34} />
         </div>
 
-        {message && <p className="success-message">{message}</p>}
-        {error && <p className="error-message">{error}</p>}
+        <div className="login-header">
+          <h2 className="login-title">Welcome Back</h2>
+          <p className="login-subtitle">Secure Terminal Access To MediRoute</p>
+        </div>
+
+        {message && <div className="success-message">{message}</div>}
+        {error && <div className="error-message">{error}</div>}
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="input-group">
             <Mail size={18} className="input-icon" />
             <input
-              className="login-input"
+              className="clinical-input"
               type="email"
               name="email"
               placeholder="Email Address"
@@ -86,7 +88,7 @@ const Login = () => {
           <div className="input-group">
             <Lock size={18} className="input-icon" />
             <input
-              className="login-input"
+              className="clinical-input"
               type="password"
               name="password"
               placeholder="Password"
@@ -97,13 +99,13 @@ const Login = () => {
           </div>
 
           <button type="submit" className="login-button">
-            Sign In
+            Sign In <LogIn size={18} />
           </button>
         </form>
 
         <div className="redirect-link">
           <p>
-            New to MediRoute? <Link to="/register">Create Account</Link>
+            New to MediRoute? <Link to="/register">Create Account <UserPlus size={14} style={{ marginLeft: '2px' }} /></Link>
           </p>
         </div>
       </div>

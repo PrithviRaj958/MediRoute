@@ -1,36 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Loader2, Shield, Activity, MapPin, ChevronRight } from 'lucide-react';
+import { BrowserRouter as Router, useNavigate } from 'react-router-dom';
+import { Loader2, ShieldCheck, Activity, Map, ChevronRight, HeartPulse } from 'lucide-react';
 import '../Dashboard.css';
 
-/**
- * MediRoute Futuristic Dashboard Redirector
- * Logic-only file that interacts with Dashboard.css
- */
-
-const Dashboard = () => {
+const Dashboard= () => {
   const navigate = useNavigate();
   const [progress, setProgress] = useState(0);
   const [role, setRole] = useState("LOADING");
 
   useEffect(() => {
-    // 1. Retrieve role and ID from localStorage
     const storedRole = localStorage.getItem("role"); 
     const hospitalId = localStorage.getItem("hospitalId");
     setRole(storedRole || "USER");
 
-    // 2. Animate the progress bar for visual feedback
     const interval = setInterval(() => {
-      setProgress((prev) => (prev < 100 ? prev + 3 : 100));
-    }, 40);
+      setProgress((prev) => (prev < 100 ? prev + 2 : 100));
+    }, 30);
 
-    // 3. Handle the redirection logic after the animation
     const timer = setTimeout(() => {
+      // In a real app, these would navigate to different routes
       if (storedRole === "OPERATOR") {
         navigate("/operator");
       } else if (storedRole === "HOSPITAL_ADMIN") {
         if (!hospitalId) {
-          console.error("No hospital linked to this admin account.");
           navigate("/login");
         } else {
           navigate("/hospital-admin");
@@ -40,7 +32,7 @@ const Dashboard = () => {
       } else {
         navigate("/login");
       }
-    }, 2500);
+    }, 2800);
 
     return () => {
       clearTimeout(timer);
@@ -49,66 +41,56 @@ const Dashboard = () => {
   }, [navigate]);
 
   return (
-    <div className="dashboard-root">
-      {/* Background Animated Elements */}
-      <div className="dashboard-blob-1"></div>
-      <div className="dashboard-blob-2"></div>
-      <div className="dashboard-grid-overlay"></div>
+    <div className="clinical-root">
+      <div className="clinical-grid"></div>
+      <div className="clinical-bg-accent accent-tl"></div>
+      <div className="clinical-bg-accent accent-br"></div>
 
-      {/* Futuristic UI Card */}
-      <div className="dashboard-card">
-        <div className="dashboard-logo-container">
-          <Activity color="white" size={40} />
+      <div className="clinical-card">
+        <div className="clinical-icon-box">
+          <HeartPulse size={36} />
         </div>
-        
-        <h1 className="dashboard-title">MediRoute</h1>
-        <p className="dashboard-subtitle">Next-Gen Medical Logistics</p>
 
-        <div className="dashboard-content-area">
-          <p className="dashboard-status-text">
-            {progress < 100 ? 'Authenticating Secure Session' : 'Initializing Workspace...'}
-          </p>
-          <p className="dashboard-role-text">
-            Accessing {role.replace('_', ' ')} terminal
-          </p>
+        <h1 className="clinical-title">
+          MediRoute <span className="clinical-badge">v2.0</span>
+        </h1>
+        <p style={{ color: '#64748b', fontSize: '14px' }}>Medical Logistics Management System</p>
 
-          {/* Progress Bar (Width is dynamic based on state) */}
-          <div className="dashboard-progress-track">
-            <div 
-              className="dashboard-progress-bar" 
-              style={{ width: `${progress}%` }}
-            ></div>
+        <div className="clinical-progress-container">
+          <div className="clinical-progress-label">
+            <span>{progress < 100 ? 'Syncing Clinical Data...' : 'Protocol Ready'}</span>
+            <span>{progress}%</span>
           </div>
-
-          {/* Visual Indicators */}
-          <div className="dashboard-stats-grid">
-            <div className="dashboard-stat-item">
-              <Shield size={18} color="#60a5fa" />
-              <span className="dashboard-stat-label">Secure</span>
-            </div>
-            <div className="dashboard-stat-item">
-              <MapPin size={18} color="#34d399" />
-              <span className="dashboard-stat-label">Live GPS</span>
-            </div>
-            <div className="dashboard-stat-item">
-              <Loader2 size={18} color="#22d3ee" className="dashboard-spinning-icon" />
-              <span className="dashboard-stat-label">Syncing</span>
-            </div>
+          <div className="clinical-progress-track">
+            <div className="clinical-progress-fill" style={{ width: `${progress}%` }}></div>
           </div>
-
-          {/* Redirection Active Indicator */}
-          {progress === 100 && (
-            <div className="dashboard-redirect-info">
-              Redirection Protocol Active <ChevronRight size={16} />
-            </div>
-          )}
         </div>
+
+        <div className="clinical-stats">
+          <div className="clinical-stat-card">
+            <ShieldCheck size={20} color="#0ea5e9" />
+            <span>Encrypted</span>
+          </div>
+          <div className="clinical-stat-card">
+            <Activity size={20} color="#0ea5e9" />
+            <span>Real-time</span>
+          </div>
+          <div className="clinical-stat-card">
+            <Map size={20} color="#0ea5e9" />
+            <span>Routed</span>
+          </div>
+        </div>
+
+        {progress === 100 && (
+          <div className="clinical-redirecting">
+            Redirecting to {role.replace('_', ' ')} Workspace <ChevronRight size={18} />
+          </div>
+        )}
       </div>
 
-      {/* Decorative System ID */}
-      <p className="dashboard-system-id">
-        System ID: MR-{Math.floor(Math.random() * 9000) + 1000}-QX
-      </p>
+      <div style={{ position: 'absolute', bottom: '24px', fontSize: '11px', color: '#94a3b8', letterSpacing: '1px' }}>
+        SECURE TERMINAL : {new Date().toLocaleDateString()}
+      </div>
     </div>
   );
 };
