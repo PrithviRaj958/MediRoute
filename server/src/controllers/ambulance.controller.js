@@ -68,8 +68,8 @@ exports.getAmbulances = async (req, res) => {
 
 exports.getNearestAmbulance = async (req, res) => {
   try {
-
     const { lng, lat } = req.query;
+    if (!lng || !lat) return res.status(400).json({ message: "Coords required" });
 
     const ambulance = await Ambulance.findOne({
       status: "AVAILABLE",
@@ -84,8 +84,7 @@ exports.getNearestAmbulance = async (req, res) => {
       }
     });
 
-    res.json(ambulance);
-
+    res.json(ambulance); // Returns null if none found
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -94,26 +93,16 @@ exports.getNearestAmbulance = async (req, res) => {
 
 exports.updateLocation = async (req, res) => {
   try {
-
     const { ambulanceId, lng, lat } = req.body;
-
     const ambulance = await Ambulance.findByIdAndUpdate(
       ambulanceId,
       {
-        location: {
-          type: "Point",
-          coordinates: [lng, lat]
-        },
+        location: { type: "Point", coordinates: [lng, lat] },
         lastUpdated: new Date()
       },
       { new: true }
     );
-
-    res.json({
-      message: "Location updated",
-      ambulance
-    });
-
+    res.json({ message: "Location updated", ambulance });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

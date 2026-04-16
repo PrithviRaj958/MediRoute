@@ -79,10 +79,6 @@ function TrackAmbulance() {
           attribution='&copy; OpenStreetMap contributors'
         />
 
-        {/* PRIORITY LOGIC: 
-          Use liveLocation (Socket) if available for smooth movement.
-          Otherwise, fall back to amb.location (Database) from the API.
-        */}
         <Marker
           position={[
             liveLocation?.lat || amb.location.coordinates[1],

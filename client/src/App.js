@@ -11,6 +11,7 @@ import EmergencyPage from "./pages/EmergencyPage";
 import HospitalPanel from "./pages/HospitalPanel.jsx";
 
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import OperatorDashboard from "./pages/OperatorDashboard.jsx";
 
 const OperatorPanel = () => <h1>Operator Panel</h1>;
 
@@ -36,7 +37,7 @@ function App() {
 
         <Route path="/operator" element={
           <ProtectedRoute allowedRoles="OPERATOR">
-            <OperatorPanel />
+            <OperatorDashboard />
           </ProtectedRoute>
         } />
 
