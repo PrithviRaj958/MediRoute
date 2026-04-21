@@ -1,120 +1,100 @@
-.emergency-container { 
-    font-family: sans-serif; 
-    padding: 10px; 
-}
-.form-section, .ambulance-list-section, .tracking-section { 
-    margin-bottom: 20px; 
-}
-.section-title { 
-    font-size: 1.2rem; 
-    margin-bottom: 15px; 
-    color: #333; 
-}
-.input-group { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 10px; 
-}
-.form-input, .form-select { 
-    padding: 12px; 
-    border: 1px solid #ddd; 
-    border-radius: 8px; 
-    font-size: 14px; 
-    width: 100%; 
-    box-sizing: border-box; 
-}
-.coord-row { 
-    display: flex; 
-    gap: 10px; 
-}
-.primary-btn { 
-    padding: 12px; 
-    background: #e74c3c; 
-    color: white; 
-    border: none; 
-    border-radius: 8px; 
-    font-weight: bold; 
-    cursor: pointer; 
-    transition: background 0.2s; 
-}
-.primary-btn:hover { 
-    background: #c0392b; 
-}
-.primary-btn:disabled { 
-    background: #ccc; 
-}
+    .emergency-container { 
+        font-family: sans-serif; 
+        padding: 10px; 
+    }
+    .form-section, .ambulance-list-section, .tracking-section { 
+        margin-bottom: 20px; 
+    }
+    .section-title { 
+        font-size: 1.2rem; 
+        margin-bottom: 15px; 
+        color: #333; 
+    }
+    .input-group { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 10px; 
+    }
+    .form-input, .form-select { 
+        padding: 12px; 
+        border: 1px solid #ddd; 
+        border-radius: 8px; 
+        font-size: 14px; 
+        width: 100%; 
+        box-sizing: border-box; 
+    }
+    .coord-row { 
+        display: flex; 
+        gap: 10px; 
+    }
+    .primary-btn { 
+        padding: 12px; 
+        background: #e74c3c; 
+        color: white; 
+        border: none; 
+        border-radius: 8px; 
+        font-weight: bold; 
+        cursor: pointer; 
+        transition: background 0.2s; 
+    }
+    .primary-btn:hover { 
+        background: #c0392b; 
+    }
+    .primary-btn:disabled { 
+        background: #ccc; 
+    }
 
-.ambulance-list { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 8px; 
-}
-.ambulance-card { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    padding: 12px; 
-    background: #f8f9fa; 
-    border: 1px solid #eee; 
-    border-radius: 8px; 
-}
-.amb-meta { 
-    display: flex; 
-    flex-direction: column; 
-}
-.amb-id { 
-    font-weight: bold; 
-    color: #2c3e50; 
-}
-.amb-status { 
-    font-size: 11px; 
-    text-transform: uppercase; 
-    color: #27ae60; 
-}
-.assign-btn { 
-    background: #3498db; 
-    color: white; 
-    border: none; 
-    padding: 8px 16px; 
-    border-radius: 6px; 
-    cursor: pointer; 
-    font-size: 12px; }
+    .ambulance-list { 
+        display: flex; 
+        flex-direction: column; 
+        gap: 8px; 
+    }
+    .ambulance-card { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        padding: 12px; 
+        background: #f8f9fa; 
+        border: 1px solid #eee; 
+        border-radius: 8px; 
+    }
+    .amb-meta { 
+        display: flex; 
+        flex-direction: column; 
+    }
+    .amb-id { 
+        font-weight: bold; 
+        color: #2c3e50; 
+    }
+    .amb-status { 
+        font-size: 11px; 
+        text-transform: uppercase; 
+        color: #27ae60; 
+    }
+    .assign-btn { 
+        background: #3498db; 
+        color: white; 
+        border: none; 
+        padding: 8px 16px; 
+        border-radius: 6px; 
+        cursor: pointer; 
+        font-size: 12px; }
 
-.confirmation-card {   
-    background: #f0fff4; 
-    padding: 15px; 
-    border: 1.5px solid #27ae60; 
-    border-radius: 12px; 
-}
-.conf-details p { 
-    margin: 5px 0; 
-    font-size: 14px; 
-    color: #1b4332; 
-}
-.live-map-view { 
-    height: 350px; 
-    width: 100%; 
-    margin-top: 15px; 
-    border-radius: 12px; 
-    border: 1px solid #ccc; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-}
+    .confirmation-card {   
+        background: #f0fff4; 
+        padding: 15px; 
+        border: 1.5px solid #27ae60; 
+        border-radius: 12px; 
+    }
+    .conf-details p { 
+        margin: 5px 0; 
+        font-size: 14px; 
+        color: #1b4332; 
+    }
 
-.status-feedback { 
-    margin-top: 15px; 
-    font-weight: bold; 
-    color: #e67e22; 
-    text-align: center; 
-}
-
-/* Map Marker Styles */
-.map-marker { 
-    font-size: 24px; 
-    text-align: center; 
-    line-height: 32px; 
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); 
-}
-.custom-leaflet-icon { 
-    background: none; 
-    border: none; 
-}
+    .status-feedback { 
+        margin-top: 15px; 
+        font-weight: bold; 
+        color: #e67e22; 
+        text-align: center; 
+    }

@@ -1,0 +1,18 @@
+.map-marker { 
+    font-size: 24px; 
+    text-align: center; 
+    line-height: 32px; 
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); 
+}
+.custom-leaflet-icon { 
+    background: none; 
+    border: none; 
+}
+.live-map-view { 
+    height: 350px; 
+    width: 100%; 
+    margin-top: 15px; 
+    border-radius: 12px; 
+    border: 1px solid #ccc; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+}
