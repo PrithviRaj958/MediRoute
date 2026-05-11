@@ -6,48 +6,79 @@ require("dotenv").config();
 
 const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
-const io = new Server(server,{   //this keeps the TCP connection alive for real-time communication wihout redialing
-    cors : {
-        origin : "http://localhost:3000",
-        methods : ["GET","POST"]
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:3000",
+        methods: ["GET", "POST"]
     }
-})
+});
+
 connectDB();
 
-io.on("connection",(socket) =>{
+io.on("connection", (socket) => {
     console.log(`User connected: ${socket.id}`);
 
-    socket.on("join_hospital_room",(hospitalId) => {
+    socket.on("join_hospital_room", (hospitalId) => {
         socket.join(hospitalId);
-        console.log(`Hospital ${hospitalId} is online`);
+        console.log(`Socket ${socket.id} joined room: ${hospitalId}`);
     });
 
-    socket.on("send_emergency_request",(data) => {
-        const {hospitalId} = data;
-        console.log(`Emergency request received for hospital ${hospitalId}`);
-        io.to(hospitalId).emit("incoming_emergency_alert", data);
+    // 1. Operator broadcasts to ALL nearby drivers
+    socket.on("broadcast_to_drivers", (data) => {
+        console.log("Broadcasting emergency to all drivers...");
+        // In a production app, you'd use geo-spatial filtering here.
+        // For now, we emit to all connected drivers.
+        io.emit("incoming_dispatch_request", data);
     });
 
-    socket.on("hospital_accept_handshake",(data) =>{
-        console.log(`Hospital ${data.hospitalId} accepted request ${data.requestId}`);
-        io.emit("handshake_completed", {
-            status : "ACCEPTED",
-            hospitalId : data.hospitalId,
-            message :"Hospital is ready. Proceed to ER enterance."
+    // 2. Driver Accepts -> Trigger the Hospital Alert
+    socket.on("driver_accept_emergency", (data) => {
+        const { hospitalId, emergencyId, ambulanceId, patientName, severity } = data;
+        console.log(`Driver ${ambulanceId} accepted. Notifying Hospital ${hospitalId}`);
+
+        // Notify the specific hospital room (Trigger Red Modal)
+        if (hospitalId) {
+            io.to(hospitalId).emit("incoming_emergency_alert", {
+                requestId: emergencyId,
+                patientName: patientName,
+                severity: severity,
+                ambulanceId: ambulanceId
+            });
+        }
+
+        // Also notify the Operator that a driver has picked it up
+        io.emit("driver_confirmed_assignment", {
+            emergencyId,
+            ambulanceId,
+            status: "DRIVER_EN_ROUTE"
         });
     });
 
-    socket.on("disconnect", () =>{
-        console.log(`User disconnected: ${socket.id}`);
+    // 3. Hospital Accepts -> Handshake Completed
+    socket.on("hospital_accept_handshake", (data) => {
+        const { hospitalId, requestId, ambulanceId } = data;
+        console.log(`Hospital ${hospitalId} accepted for request ${requestId}`);
+
+        // Final confirmation to Driver and Operator
+        io.emit("handshake_completed", {
+            status: "ACCEPTED",
+            requestId: requestId,
+            hospitalId: hospitalId,
+            ambulanceId: ambulanceId,
+            message: "Hospital confirmed. Proceed to ER."
+        });
     });
 
     socket.on("driver_location_update", (data) => {
         const { hospitalId, lat, lng, ambulanceId } = data;
-        console.log(`Relaying location for Ambulance ${ambulanceId} to Hospital ${hospitalId}`);
         io.to(hospitalId).emit("ambulance_moved", { lat, lng, ambulanceId });
     });
-})
 
-server.listen(PORT, () =>{
+    socket.on("disconnect", () => {
+        console.log(`User disconnected: ${socket.id}`);
+    });
+});
+
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

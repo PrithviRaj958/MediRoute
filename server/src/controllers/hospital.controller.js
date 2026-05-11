@@ -37,7 +37,11 @@ exports.createHospital = async(req , res) => {
 
 exports.updateBeds = async(req, res) =>{
     try {
-        const id = req.user.hospitalId;
+        console.log("User object from token:", req.user);
+        const id = req.user.hospitalId || req.user.id;
+        if (!id) {
+            return res.status(400).json({ message: "No Hospital ID found in token" });
+        }
         const availableBeds = req.body.availableBeds ;
         const action = req.body.action;
         if( availableBeds <= 0){

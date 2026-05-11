@@ -3,11 +3,11 @@ const router = express.Router();
 
 const {
   createEmergency,
-  assignAmbulance,
+  driverAcceptRequest,
    getEmergency
 } = require("../controllers/emergency.controller");
 
 router.post("/", createEmergency);
-router.post("/assign", assignAmbulance);
+router.post("/driver-accept", driverAcceptRequest);
 router.get("/:id", getEmergency);
 module.exports = router;
