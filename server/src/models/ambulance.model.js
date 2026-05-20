@@ -12,6 +12,12 @@ const ambulanceSchema = new mongoose.Schema({
     unique: true
   },
 
+  capability: {
+    type: String,
+    enum: ["BLS", "ALS"], // Basic Life Support, Advanced Life Support
+    default: "BLS"
+  },
+
   status: {
     type: String,
     enum: ["AVAILABLE", "BUSY", "OFFLINE"],

@@ -71,7 +71,7 @@ exports.getNearestAmbulance = async (req, res) => {
     const { lng, lat } = req.query;
     if (!lng || !lat) return res.status(400).json({ message: "Coords required" });
 
-    const ambulance = await Ambulance.findOne({
+    const ambulances = await Ambulance.find({
       status: "AVAILABLE",
       location: {
         $near: {
@@ -84,7 +84,7 @@ exports.getNearestAmbulance = async (req, res) => {
       }
     });
 
-    res.json(ambulance); // Returns null if none found
+    res.json(ambulances); // Returns array of nearby ambulances
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
