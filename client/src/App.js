@@ -6,7 +6,6 @@ import Login from "./pages/Login.jsx";
 import AmbulanceManagement from "./pages/AmbulanceManagement";
 import Dashboard from "./pages/Dashboard.jsx";
 import DriverDashboard from "./pages/DriverDashboard";
-import TrackAmbulance from "./pages/TrackAmbulance";
 import EmergencyPage from "./pages/EmergencyPage";
 import HospitalPanel from "./pages/HospitalPanel.jsx";
 
@@ -44,8 +43,7 @@ function App() {
         <Route path="/ambulances" element={<AmbulanceManagement />} />
 
         <Route path="/emergency" element={<EmergencyPage />} />
-        <Route path="/track" element={<TrackAmbulance />} />
-
+        
         <Route path="/hospital-admin" element={
           <ProtectedRoute allowedRoles="HOSPITAL_ADMIN">
             <HospitalPanel />

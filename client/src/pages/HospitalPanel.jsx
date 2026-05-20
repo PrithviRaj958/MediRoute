@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import '../HospitalPanel.css';
-import TrackAmbulance from './TrackAmbulance';
+import MapView from '../components/MapView';
 import { 
     initiateSocketConnection, 
     disconnectSocket, 
     subscribeToEmergencies, 
-    acceptEmergencyhandshake, 
     getSocket, 
     subscribeToAmbulanceMovement 
 } from '../services/socketService';
@@ -20,6 +19,7 @@ const HospitalPanel = () => {
     const [successMsg, setSuccessMsg] = useState("");
     const [ambulancePos, setAmbulancePos] = useState(null);
     const [isTracking, setIsTracking] = useState(false);
+    const [activeEmergencyData, setActiveEmergencyData] = useState(null);
 
     useEffect(() => {
         const fetchHospital = async () => {
@@ -34,7 +34,7 @@ const HospitalPanel = () => {
                     setHospital(hospitalData);
                     setLoading(false);
                     
-                    // 1. Join the socket room for this hospital
+                    // 1. Join the socket room
                     initiateSocketConnection(hospitalData._id);
 
                     // 2. Listen for new emergencies
@@ -43,17 +43,15 @@ const HospitalPanel = () => {
                         setIncomingEmergency(data);
                     });
 
-                    // 3. Listen for live ambulance movement
+                    // 3. Listen for live movement
                     subscribeToAmbulanceMovement((data) => {
-                        console.log("🚑 Ambulance moved:", data);
                         setAmbulancePos({ lat: data.lat, lng: data.lng });
                     });
 
                 } else {
-                    throw new Error("Hospital data is empty or invalid");
+                    throw new Error("Hospital data is invalid");
                 }
             } catch (err) {
-                console.error("Fetch Error:", err);
                 setError("Failed to fetch hospital data");
                 setLoading(false);
             }
@@ -70,28 +68,47 @@ const HospitalPanel = () => {
             const res = await axios.put(`http://localhost:5000/api/hospitals/update-beds`, 
                 { action, availableBeds: amount }, {
                 headers: { Authorization: `Bearer ${token}` }
-            });
+            });     
             setHospital(res.data.hospital);
         } catch (err) {
-            setError("Failed to update bed availability");
-            setTimeout(() => setError(""), 3000);
+            setError("Update failed");
         }
     };
 
     const handleAccepthandshake = async () => {
         if (!incomingEmergency) return;
-        localStorage.setItem("emergencyId", incomingEmergency.requestId);
-        // Trigger socket handshake
-        acceptEmergencyhandshake(incomingEmergency.requestId, hospital._id);
         
-        // Update local DB
-        await handleUpdate('decrement', 1); 
-        
-        setIncomingEmergency(null);
-        setSuccessMsg("✅ Emergency Accepted. Tracking Ambulance...");
-        setIsTracking(true); // Show the map
-        
-        setTimeout(() => setSuccessMsg(""), 4000);
+        try {
+            // 1. Fetch FULL emergency details
+            const res = await axios.get(`http://localhost:5000/api/emergencies/${incomingEmergency.requestId}`);
+            const fullData = res.data;
+
+            // 2. Manual emit to ensure ambulanceId is passed to the driver
+            const socket = getSocket();
+            if (socket) {
+                socket.emit('hospital_accept_handshake', {
+                    requestId: incomingEmergency.requestId,
+                    hospitalId: hospital._id,
+                    ambulanceId: fullData.assignedAmbulance._id 
+                });
+            }
+
+            // 3. Update UI States
+            setActiveEmergencyData(fullData);
+            setIsTracking(true);
+            setIncomingEmergency(null);
+            setSuccessMsg("✅ Emergency Accepted. Tracking Ambulance..."); 
+            
+            // 4. Update Database
+            await handleUpdate('decrement', 1);
+
+            // Clear success message after 4s
+            setTimeout(() => setSuccessMsg(""), 4000);
+
+        } catch (err) {
+            console.error("Handshake failed:", err);
+            setError("Could not establish connection with ambulance.");
+        }
     };
 
     const handleDeclinehandshake = () => {
@@ -106,11 +123,11 @@ const HospitalPanel = () => {
     };
 
     if (loading) return <div className="loader">Loading Dashboard...</div>;
-    if (error) return <div className="error-msg">{error}</div>;
 
     return (
         <div className="admin-container">
             {successMsg && <div className="success-banner">{successMsg}</div>}
+            {error && <div className="error-msg">{error}</div>}
 
             {incomingEmergency && (
                 <div className="emergency-modal-overlay">
@@ -125,9 +142,8 @@ const HospitalPanel = () => {
                                 className="btn btn-accept" 
                                 disabled={hospital?.availableBeds <= 0} 
                                 onClick={handleAccepthandshake}
-                                style={{ opacity: hospital?.availableBeds <= 0 ? 0.5 : 1 }}
                             >
-                                {hospital?.availableBeds <= 0 ? "No Beds Available" : "Accept & Reserve Bed"}
+                                {hospital?.availableBeds <= 0 ? "No Beds" : "Accept & Reserve"}
                             </button>
                             <button className="btn btn-decline" onClick={handleDeclinehandshake}>Decline</button>
                         </div>
@@ -168,23 +184,23 @@ const HospitalPanel = () => {
                             />
                         </div>
                         <div className="button-group">
-                            <button className="btn btn-add" onClick={() => handleUpdate('increment')}>Add Beds</button>
-                            <button className="btn btn-remove" onClick={() => handleUpdate('decrement')}>Remove Beds</button>
+                            <button className="btn btn-add" onClick={() => handleUpdate('increment')}>Add</button>
+                            <button className="btn btn-remove" onClick={() => handleUpdate('decrement')}>Remove</button>
                         </div>
                     </section>
                 </div>
 
-                {isTracking && (
+                {isTracking && activeEmergencyData && (
                     <section className="live-map-section">
                         <div className="map-card">
                             <div className="map-header">
                                 <h3>🚑 Incoming Ambulance Live Feed</h3>
                                 <button className="btn-close-map" onClick={() => setIsTracking(false)}>Close Map</button>
                             </div>
-                            {/* Pass data to the child component */}
-                            <TrackAmbulance 
-                                hospitalLocation={hospital?.location?.coordinates} 
-                                ambulancePos={ambulancePos} 
+                            <MapView 
+                                emergency={activeEmergencyData} 
+                                lat={hospital.location.coordinates[1]} 
+                                lng={hospital.location.coordinates[0]} 
                             />
                         </div>
                     </section>
