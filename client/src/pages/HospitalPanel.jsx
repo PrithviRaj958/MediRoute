@@ -197,11 +197,15 @@ const HospitalPanel = () => {
                                 <h3>🚑 Incoming Ambulance Live Feed</h3>
                                 <button className="btn-close-map" onClick={() => setIsTracking(false)}>Close Map</button>
                             </div>
-                            <MapView 
-                                emergency={activeEmergencyData} 
-                                lat={hospital.location.coordinates[1]} 
-                                lng={hospital.location.coordinates[0]} 
-                            />
+                            <div style={{ padding: "30px", textAlign: "center" }}>
+                                <button 
+                                    className="btn btn-accept" 
+                                    style={{ padding: "15px 30px", fontSize: "1.2rem" }}
+                                    onClick={() => window.open(`/track/${activeEmergencyData._id}`, '_blank')}
+                                >
+                                    Open Live Tracking Feed 🚨
+                                </button>
+                            </div>
                         </div>
                     </section>
                 )}

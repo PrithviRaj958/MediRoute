@@ -1,100 +1,99 @@
-/*import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import axios from "axios";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-import { initiateSocketConnection, subscribeToAmbulanceMovement } from "../services/socketService";
+import { useEmergency } from "../context/EmergencyContext";
+import LiveMapView from "../components/Map/LiveMapView";
+import StatusTimeline from "../components/Timeline/StatusTimeline";
 
-// Fix for default marker icons in React-Leaflet
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
-  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
-  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
-});
+const TrackAmbulance = () => {
+    const { emergencyId } = useParams();
+    const { joinEmergency, status, eta } = useEmergency();
+    const [emergencyDetails, setEmergencyDetails] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-function TrackAmbulance() {
-  const [emergency, setEmergency] = useState(null);
-  const [liveLocation, setLiveLocation] = useState(null);
+    useEffect(() => {
+        if (emergencyId) {
+            joinEmergency(emergencyId);
+        }
+    }, [emergencyId, joinEmergency]);
 
-  const emergencyId = localStorage.getItem("emergencyId");
+    useEffect(() => {
+        const fetchDetails = async () => {
+            try {
+                // Fetch complete emergency details (including coords) from API
+                const res = await axios.get(`http://localhost:5000/api/emergencies/${emergencyId}`);
+                setEmergencyDetails(res.data);
+                setLoading(false);
+            } catch (err) {
+                console.error("Error fetching emergency details:", err);
+                setLoading(false);
+            }
+        };
 
-  // 1. Initial Fetch and Socket Setup
-  useEffect(() => {
-    const hId = localStorage.getItem("hospitalId");
-    initiateSocketConnection(hId);
+        if (emergencyId) {
+            fetchDetails();
+        }
+    }, [emergencyId]);
 
-    // Listen for real-time socket updates from Driver
-    subscribeToAmbulanceMovement((data) => {
-      console.log("Ambulance moved in real-time:", data);
-      setLiveLocation({ lat: data.lat, lng: data.lng });
-    });
-
-    fetchEmergency();
-  }, []);
-
-  // 2. Database Backup: Refresh emergency data every 3 seconds
-  useEffect(() => {
-    fetchEmergency();
-    const interval = setInterval(fetchEmergency, 3000); 
-    return () => clearInterval(interval);
-  }, []);
-
-  const fetchEmergency = async () => {
-    if (!emergencyId) return;
-    try {
-      const res = await axios.get(`http://localhost:5000/api/emergencies/${emergencyId}`);
-      setEmergency(res.data);
-    } catch (err) {
-      console.error("Error fetching emergency details:", err);
+    if (loading) {
+        return <div className="p-8 text-center text-gray-600">Loading tracking data...</div>;
     }
-  };
 
-  if (!emergency) return <h2>Loading emergency data...</h2>;
+    if (!emergencyDetails) {
+        return <div className="p-8 text-center text-red-500">Emergency not found.</div>;
+    }
 
-  if (!emergency.assignedAmbulance) {
-    return <h2>Waiting for ambulance assignment...</h2>;
-  }
+    // Extract coordinates safely
+    // MongoDB stores Point as [lng, lat]
+    const extractCoords = (obj) => {
+        if (!obj || !obj.location || !obj.location.coordinates) return null;
+        return {
+            lat: obj.location.coordinates[1],
+            lng: obj.location.coordinates[0]
+        };
+    };
 
-  const amb = emergency.assignedAmbulance;
+    const patientLocation = {
+        lat: parseFloat(emergencyDetails.location.lat) || extractCoords(emergencyDetails)?.lat,
+        lng: parseFloat(emergencyDetails.location.lng) || extractCoords(emergencyDetails)?.lng,
+    };
+    
+    const hospitalLocation = extractCoords(emergencyDetails.assignedHospital);
+    const initialAmbulanceLocation = extractCoords(emergencyDetails.assignedAmbulance);
 
-  return (
-    <div style={{ padding: "20px" }}>
-      <h2>🚑 Ambulance Tracking</h2>
-      <div style={{ marginBottom: '10px' }}>
-        <strong>Vehicle:</strong> {amb.vehicleNumber} | 
-        <strong> Status:</strong> {amb.status}
-      </div>
+    return (
+        <div className="min-h-screen bg-gray-50 p-6">
+            <div className="max-w-4xl mx-auto">
+                <div className="mb-6">
+                    <h1 className="text-3xl font-bold text-gray-900">Live Tracking</h1>
+                    <p className="text-gray-500">Emergency Request: #{emergencyId.slice(-6).toUpperCase()}</p>
+                </div>
 
-      <MapContainer
-        center={[
-          amb.location.coordinates[1],
-          amb.location.coordinates[0]
-        ]}
-        zoom={14}
-        style={{ height: "450px", width: "100%", borderRadius: "12px" }}
-      >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; OpenStreetMap contributors'
-        />
+                <StatusTimeline />
 
-        <Marker
-          position={[
-            liveLocation?.lat || amb.location.coordinates[1],
-            liveLocation?.lng || amb.location.coordinates[0]
-          ]}
-        >
-          <Popup>
-            🚑 {amb.vehicleNumber} <br />
-            {liveLocation ? "Live Tracking Active" : "Synced with Database"}
-          </Popup>
-        </Marker>
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                    <LiveMapView 
+                        patientLocation={patientLocation}
+                        hospitalLocation={hospitalLocation}
+                        initialAmbulanceLocation={initialAmbulanceLocation}
+                    />
+                </div>
 
-      </MapContainer>
-    </div>
-  );
-}
+                <div className="mt-6 grid grid-cols-2 gap-4">
+                    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                        <h3 className="text-sm text-gray-500 mb-1">Ambulance Details</h3>
+                        <p className="font-semibold">{emergencyDetails.assignedAmbulance?.vehicleNumber || 'N/A'}</p>
+                        <p className="text-sm text-gray-600">{emergencyDetails.assignedAmbulance?.driverName || 'N/A'}</p>
+                    </div>
+                    <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+                        <h3 className="text-sm text-gray-500 mb-1">Patient Details</h3>
+                        <p className="font-semibold">{emergencyDetails.patientName || 'Unknown'}</p>
+                        <p className="text-sm text-gray-600">Severity: {emergencyDetails.severity}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
 
 export default TrackAmbulance;
-*/

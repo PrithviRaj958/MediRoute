@@ -5,7 +5,7 @@ import {
     initiateSocketConnection, 
     getSocket 
 } from "../services/socketService";  
-import MapView from "../components/MapView"; 
+import "../HospitalPanel.css"; // Reuse the polished dashboard styles
 
 function DriverDashboard() {
   const [ambulance, setAmbulance] = useState(null);
@@ -115,63 +115,89 @@ function DriverDashboard() {
     } catch (err) { console.error("Status update failed:", err); }
   };
 
-  if (!ambulance) return <h2>Loading Driver Dashboard...</h2>;
+  if (!ambulance) return <div className="admin-container" style={{ textAlign: "center", marginTop: "50px" }}><h2>Loading Driver Terminal...</h2></div>;
 
   return (
-    <div style={{ padding: "30px" }}>
-      <h2>🚑 Driver Dashboard</h2>
+    <div className="admin-container">
+      <header className="admin-header">
+          <h1>🚑 Driver Terminal</h1>
+          <div className="hospital-badge">
+              {ambulance.vehicleNumber} | <span style={{ color: ambulance.status === 'AVAILABLE' ? 'var(--success-color)' : 'var(--danger-color)' }}>{ambulance.status}</span>
+          </div>
+      </header>
       
-      {/* 1. Request Alert */}
+      {/* 1. Request Alert (Glassmorphism Modal) */}
       {pendingRequest && !isWaiting && (
-        <div style={{ background: "#fff3f3", padding: "20px", border: "2px solid #ff4d4d", borderRadius: "8px", marginBottom: "20px" }}>
-            <h3 style={{ margin: 0, color: "#d32f2f" }}>🚨 New Emergency Nearby!</h3>
-            <p><strong>Patient:</strong> {pendingRequest.patientName}</p>
-            <button onClick={handleAcceptRequest} style={{ background: "#2e7d32", color: "white", padding: "10px 20px", border: "none", cursor: "pointer", borderRadius: "4px" }}>ACCEPT REQUEST</button>
-            <button onClick={() => setPendingRequest(null)} style={{ background: "#ccc", marginLeft: "10px", padding: "10px 20px", border: "none", borderRadius: "4px" }}>Ignore</button>
+        <div className="emergency-modal-overlay">
+          <div className="emergency-modal" style={{ borderTop: "6px solid var(--danger-color)" }}>
+            <h2>🚨 NEW DISPATCH</h2>
+            <div className="patient-info">
+              <p><strong>Patient:</strong> {pendingRequest.patientName}</p>
+              <p><strong>Severity:</strong> {pendingRequest.severity || "High"}</p>
+            </div>
+            <div className="handshake-buttons">
+              <button onClick={handleAcceptRequest} className="btn btn-accept">ACCEPT DISPATCH</button>
+              <button onClick={() => setPendingRequest(null)} className="btn btn-decline">Ignore</button>
+            </div>
+          </div>
         </div>
       )}
 
-      {/* 🔥 2. Waiting Message: Shows after Accept is clicked */}
+      {/* 2. Waiting Message: Shows after Accept is clicked */}
       {isWaiting && !activeEmergency?.assignedHospital && (
-        <div style={{ background: "#e3f2fd", padding: "20px", border: "2px solid #2196f3", borderRadius: "8px", marginBottom: "20px", textAlign: 'center' }}>
-            <div className="loader" style={{ marginBottom: '10px' }}>⏳</div>
-            <h3 style={{ margin: 0, color: "#1976d2" }}>Request Accepted!</h3>
-            <p>Waiting for Hospital to confirm bed availability...</p>
+        <div className="success-banner" style={{ background: "var(--secondary-color)", color: "var(--primary-color)", borderLeftColor: "var(--primary-color)" }}>
+            ⏳ Request Accepted! Waiting for Hospital routing confirmation...
         </div>
       )}
 
-      <div className="hospital-badge">
-          Vehicle: <strong>{ambulance.vehicleNumber}</strong> | 
-          Status: <strong style={{ color: ambulance.status === 'AVAILABLE' ? 'green' : 'red' }}>{ambulance.status}</strong>
-      </div>
+      <main className="dashboard-content">
+        <div className="dashboard-grid">
+            <section className="control-card">
+                <h3>🚦 Duty Status</h3>
+                <div className="button-group" style={{ flexDirection: "column", gap: "10px" }}>
+                    <button className="btn btn-primary" onClick={() => updateStatus("AVAILABLE")}>Set Available</button>
+                    <button className="btn btn-danger" style={{ background: "var(--warning-color)" }} onClick={() => updateStatus("BUSY")}>Set Busy</button>
+                    <button className="btn btn-decline" onClick={() => updateStatus("OFFLINE")}>Go Offline</button>
+                </div>
+            </section>
 
-      <hr />
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-          <input placeholder="Longitude" value={lng} onChange={(e) => setLng(e.target.value)} />
-          <input placeholder="Latitude" value={lat} onChange={(e) => setLat(e.target.value)} />
-      </div>
-      <button onClick={updateLocation} className="btn-add">Transmit New Location</button>
-
-      <h3>🚦 Availability</h3>
-      <button onClick={() => updateStatus("AVAILABLE")}>Available</button>
-      <button onClick={() => updateStatus("BUSY")}>Busy</button>
-      <button onClick={() => updateStatus("OFFLINE")}>Offline</button>
-
-      {/* 3. Navigation Map (Shows only after hospital is assigned) */}
-      {activeEmergency && (
-        <div className="driver-map-section" style={{ marginTop: "30px", borderTop: "3px solid #ff4d4d", paddingTop: "20px" }}>
-            <h2 style={{ color: "#d32f2f" }}>📍 Navigating to: {activeEmergency.patientName}</h2>
-            {/* Added hospital name if available */}
-            {activeEmergency.assignedHospital && (
-                <p><strong>Destination:</strong> {activeEmergency.assignedHospital.name}</p>
-            )}
-            <MapView 
-                emergency={activeEmergency} 
-                lat={activeEmergency.location.coordinates[1]} 
-                lng={activeEmergency.location.coordinates[0]} 
-            />
+            <section className="control-card">
+                <h3>📍 Manual GPS Override</h3>
+                <div className="input-group">
+                    <label>Longitude</label>
+                    <input className="input-field" placeholder="77.5946" value={lng} onChange={(e) => setLng(e.target.value)} />
+                </div>
+                <div className="input-group">
+                    <label>Latitude</label>
+                    <input className="input-field" placeholder="12.9716" value={lat} onChange={(e) => setLat(e.target.value)} />
+                </div>
+                <button onClick={updateLocation} className="btn btn-primary" style={{ width: "100%" }}>Transmit Coordinates</button>
+            </section>
         </div>
-      )}
+
+        {/* 3. Navigation Link (Shows only after hospital is assigned) */}
+        {activeEmergency && (
+          <section className="map-card" style={{ marginTop: "30px" }}>
+              <div className="map-header">
+                  <h3 style={{ color: "var(--danger-color)" }}>📍 Active Navigation: {activeEmergency.patientName}</h3>
+              </div>
+              {activeEmergency.assignedHospital && (
+                  <p style={{ marginBottom: "20px", fontSize: "1.1rem" }}>
+                      <strong>Destination:</strong> {activeEmergency.assignedHospital.name}
+                  </p>
+              )}
+              <div style={{ textAlign: "center" }}>
+                  <button 
+                      className="btn btn-accept" 
+                      style={{ padding: "15px 30px", fontSize: "1.2rem", width: "100%" }}
+                      onClick={() => window.open(`/track/${activeEmergency._id}`, '_blank')}
+                  >
+                      Open Live Navigation 🗺️
+                  </button>
+              </div>
+          </section>
+        )}
+      </main>
     </div>
   );
 }
