@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import MapView from "../components/MapView";
 import "../Emergency.css";
 import { getSocket, initiateSocketConnection } from "../services/socketService"; 
 
@@ -117,7 +116,14 @@ function EmergencyPage() {
               <p><strong>Facility:</strong> {emergency.assignedHospital?.name}</p>
             </div>
           </div>
-          <MapView emergency={emergency} lat={lat} lng={lng} />
+          <div style={{ marginTop: "20px" }}>
+            <button 
+                className="primary-btn" 
+                onClick={() => window.open(`/track/${emergency._id}`, '_blank')}
+            >
+                Open Live Tracking 🗺️
+            </button>
+          </div>
         </div>
       )}
 

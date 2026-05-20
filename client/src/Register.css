@@ -9,14 +9,14 @@
 
 .clinical-register-root {
   min-height: 100vh;
-  background-color: #f0f4f8;
-  color: #1e293b;
+  background-color: var(--bg-color);
+  color: var(--text-main);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   position: relative;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: inherit;
   padding: 20px;
 }
 
@@ -24,7 +24,7 @@
   position: absolute;
   width: 600px;
   height: 600px;
-  background: radial-gradient(circle, rgba(14, 165, 233, 0.12) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(15, 118, 110, 0.12) 0%, transparent 70%);
   border-radius: 50%;
   filter: blur(60px);
   z-index: 1;
@@ -37,8 +37,8 @@
   inset: 0;
   opacity: 0.3;
   background-image: 
-    linear-gradient(#e2e8f0 1px, transparent 1px),
-    linear-gradient(90deg, #e2e8f0 1px, transparent 1px);
+    linear-gradient(var(--border-color) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border-color) 1px, transparent 1px);
   background-size: 30px 30px;
   z-index: 0;
 }
@@ -51,11 +51,9 @@
   background: rgba(255, 255, 255, 0.85);
   backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.6);
-  border-radius: 32px;
+  border-radius: var(--radius-xl);
   padding: 40px;
-  box-shadow: 
-    0 20px 25px -5px rgba(0, 0, 0, 0.05),
-    0 10px 10px -5px rgba(0, 0, 0, 0.02);
+  box-shadow: var(--shadow-lg);
   text-align: center;
 }
 
@@ -63,25 +61,25 @@
   width: 64px;
   height: 64px;
   background: white;
-  border-radius: 18px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 24px;
-  box-shadow: 0 10px 15px -3px rgba(14, 165, 233, 0.15);
-  color: #0ea5e9;
+  box-shadow: var(--shadow-md);
+  color: var(--primary-color);
   animation: float 4s infinite ease-in-out;
 }
 
 .register-title {
   font-size: 26px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--text-main);
   margin: 0;
 }
 
 .register-subtitle {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 14px;
   margin: 8px 0 32px;
 }
@@ -102,7 +100,7 @@
 .input-group .input-icon {
   position: absolute;
   left: 20px;
-  color: #94a3b8;
+  color: var(--text-muted);
   z-index: 10;
   pointer-events: none;
 }
@@ -111,54 +109,54 @@
 .clinical-register-root .clinical-select {
   width: 100% ;
   padding: 14px 16px 14px 64px ;
-  background-color: #f8fafc;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 14px;
-  color: #1e293b;
+  background-color: var(--bg-color);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
   font-size: 15px;
   outline: none;
-  transition: all 0.2s ease;
+  transition: all var(--transition-fast);
   box-sizing: border-box;
   appearance: none;
 }
 
 .clinical-register-root .clinical-input:focus, 
 .clinical-register-root .clinical-select:focus {
-  border-color: #0ea5e9;
+  border-color: var(--primary-color);
   background-color: white;
-  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.08);
+  box-shadow: 0 0 0 4px rgba(15, 118, 110, 0.08);
 }
 
 .register-button {
   margin-top: 10px;
   padding: 14px;
-  border-radius: 14px;
+  border-radius: var(--radius-md);
   border: none;
-  background: #0ea5e9;
+  background: var(--primary-color);
   color: white;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+  box-shadow: var(--shadow-sm);
 }
 
 .register-button:hover {
-  background: #0284c7;
+  background: var(--primary-hover);
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(14, 165, 233, 0.35);
+  box-shadow: var(--shadow-md);
 }
 
 .success-message {
   background-color: #f0fdf4;
   border: 1px solid #dcfce7;
-  color: #16a34a;
+  color: var(--success-color);
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   text-align: center;
   margin-bottom: 20px;
@@ -167,9 +165,9 @@
 .error-message {
   background-color: #fef2f2;
   border: 1px solid #fee2e2;
-  color: #ef4444;
+  color: var(--danger-color);
   padding: 12px;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   text-align: center;
   margin-bottom: 20px;
@@ -179,11 +177,11 @@
   text-align: center;
   margin-top: 28px;
   font-size: 14px;
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .redirect-link a {
-  color: #0ea5e9;
+  color: var(--primary-color);
   text-decoration: none;
   font-weight: 600;
   margin-left: 4px;
@@ -196,6 +194,6 @@
 .select-arrow {
   position: absolute;
   right: 16px;
-  color: #94a3b8;
+  color: var(--text-muted);
   pointer-events: none;
 }

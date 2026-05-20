@@ -11,13 +11,18 @@ import HospitalPanel from "./pages/HospitalPanel.jsx";
 
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import OperatorDashboard from "./pages/OperatorDashboard.jsx";
+import TrackAmbulance from "./pages/TrackAmbulance.jsx";
+import { SocketProvider } from "./context/SocketContext.jsx";
+import { EmergencyProvider } from "./context/EmergencyContext.jsx";
 
 const OperatorPanel = () => <h1>Operator Panel</h1>;
 
 function App() {
   return (
-    <Router>
-      <Routes>
+    <SocketProvider>
+      <EmergencyProvider>
+        <Router>
+          <Routes>
 
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
@@ -50,10 +55,14 @@ function App() {
           </ProtectedRoute>
         } />
 
+        <Route path="/track/:emergencyId" element={<TrackAmbulance />} />
+
         <Route path="/" element={<Navigate to="/login" />} />
 
       </Routes>
     </Router>
+      </EmergencyProvider>
+    </SocketProvider>
   );
 }
 
