@@ -5,6 +5,7 @@ import {
     initiateSocketConnection, 
     getSocket 
 } from "../services/socketService";  
+import TrackAmbulanceWidget from "../components/Map/TrackAmbulanceWidget";
 import "../HospitalPanel.css"; // Reuse the polished dashboard styles
 
 function DriverDashboard() {
@@ -15,6 +16,12 @@ function DriverDashboard() {
   const [pendingRequest, setPendingRequest] = useState(null); 
   // 🔥 NEW: Track if we are waiting for the hospital to confirm
   const [isWaiting, setIsWaiting] = useState(false);
+  const [toastMessage, setToastMessage] = useState(null);
+
+  const showToast = (message) => {
+      setToastMessage(message);
+      setTimeout(() => setToastMessage(null), 2000);
+  };
 
   const token = localStorage.getItem("token");
 
@@ -51,7 +58,7 @@ function DriverDashboard() {
         if (String(data.ambulanceId) === String(ambulance._id)) {
           // 🔥 FIX: Stop showing the waiting message once confirmed
           setIsWaiting(false); 
-          alert("Hospital Confirmed! Start Navigating.");
+          showToast("Hospital Confirmed! Start Navigating.");
           await fetchAmbulance(); 
         }
       });
@@ -84,7 +91,8 @@ function DriverDashboard() {
             hospitalId: res.data.hospitalId,
             emergencyId: res.data.emergency._id,
             ambulanceId: ambulance._id,
-            patientName: res.data.emergency.patientName
+            patientName: res.data.emergency.patientName,
+            severity: res.data.emergency.severity
         });
       }
     } catch (err) {
@@ -115,10 +123,39 @@ function DriverDashboard() {
     } catch (err) { console.error("Status update failed:", err); }
   };
 
+  const completeDispatch = async () => {
+    if (!activeEmergency) return;
+    try {
+      await axios.post("http://localhost:5000/api/emergencies/complete", 
+        { emergencyId: activeEmergency._id }, 
+        getAuthHeader()
+      );
+      setActiveEmergency(null);
+      showToast("Dispatch Completed successfully! You are now Available.");
+      fetchAmbulance();
+    } catch (err) {
+      console.error("Failed to complete dispatch:", err);
+      showToast("Failed to complete dispatch.");
+    }
+  };
+
   if (!ambulance) return <div className="admin-container" style={{ textAlign: "center", marginTop: "50px" }}><h2>Loading Driver Terminal...</h2></div>;
 
   return (
     <div className="admin-container">
+      {toastMessage && (
+        <div style={{
+            position: "fixed", top: "20px", left: "50%", transform: "translateX(-50%)",
+            background: "var(--surface-color)", color: "var(--text-main)", 
+            padding: "15px 30px", borderRadius: "var(--radius-lg)", 
+            boxShadow: "0 10px 30px rgba(0,0,0,0.15)", zIndex: 9999,
+            borderLeft: "5px solid var(--primary-color)", fontWeight: "bold",
+            animation: "slideDown 0.3s ease-out"
+        }}>
+            {toastMessage}
+        </div>
+      )}
+
       <header className="admin-header">
           <h1>🚑 Driver Terminal</h1>
           <div className="hospital-badge">
@@ -177,23 +214,20 @@ function DriverDashboard() {
 
         {/* 3. Navigation Link (Shows only after hospital is assigned) */}
         {activeEmergency && (
-          <section className="map-card" style={{ marginTop: "30px" }}>
-              <div className="map-header">
-                  <h3 style={{ color: "var(--danger-color)" }}>📍 Active Navigation: {activeEmergency.patientName}</h3>
-              </div>
-              {activeEmergency.assignedHospital && (
-                  <p style={{ marginBottom: "20px", fontSize: "1.1rem" }}>
-                      <strong>Destination:</strong> {activeEmergency.assignedHospital.name}
-                  </p>
-              )}
-              <div style={{ textAlign: "center" }}>
-                  <button 
-                      className="btn btn-accept" 
-                      style={{ padding: "15px 30px", fontSize: "1.2rem", width: "100%" }}
-                      onClick={() => window.open(`/track/${activeEmergency._id}`, '_blank')}
-                  >
-                      Open Live Navigation 🗺️
+          <section className="map-card" style={{ marginTop: "30px", padding: 0, overflow: "hidden" }}>
+              <div className="map-header" style={{ padding: "20px 30px", marginBottom: 0, borderBottom: "1px solid var(--border-color)", background: "var(--bg-color)" }}>
+                  <h3 style={{ color: "var(--danger-color)", margin: 0 }}>📍 Active Navigation: {activeEmergency.patientName}</h3>
+                  <button onClick={completeDispatch} className="btn btn-add" style={{ padding: "8px 16px", background: "var(--success-color)", color: "white" }}>
+                      Dispatching Completed ✅
                   </button>
+              </div>
+              <div style={{ padding: "20px" }}>
+                  {activeEmergency.assignedHospital && (
+                      <p style={{ marginBottom: "20px", fontSize: "1.1rem" }}>
+                          <strong>Destination:</strong> {activeEmergency.assignedHospital.name}
+                      </p>
+                  )}
+                  <TrackAmbulanceWidget emergencyId={activeEmergency._id} />
               </div>
           </section>
         )}

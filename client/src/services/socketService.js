@@ -61,4 +61,13 @@ export const subscribeToAmbulanceMovement = (callback) => {
     });
 };
 
+export const subscribeToHospitalAlerts = (callback) => {
+    if (!socket) return;
+    socket.off('hospital_alert');
+    socket.on('hospital_alert', (data) => {
+        console.log('Hospital alert received', data);
+        callback(data);
+    });
+};
+
 export const getSocket = () => socket;
