@@ -61,48 +61,11 @@ export const subscribeToAmbulanceMovement = (callback) => {
     });
 };
 
-export const subscribeToDriverLocation = (callback) => {
-    if(!socket) return;
-    socket.on('driver_location_update', (coords) => {
-        console.log('Driver location received');
-        callback(coords);
-    });
-};
-
-export const emitPatientLocation = (data) => {
-    if(socket){
-        socket.emit('patient_location_update', data);
-    }
-};
-
-export const subscribeToPatientLocation = (callback) => {
-    if(!socket) return;
-    socket.on('patient_location_update', (coords) => {
-        console.log('Patient location received');
-        callback(coords);
-    });
-};
-
-export const unsubscribeFromPatientLocation = () => {
-    if(!socket) return;
-    socket.off('patient_location_update');
-};
-
-export const unsubscribeFromDriverLocation = () => {
-    if(!socket) return;
-    socket.off('driver_location_update');
-};
-
-export const joinEmergencyRoom = (emergencyId) => {
-    if(socket){
-        socket.emit('join_emergency_room', emergencyId);
-    }
-};
-
-export const subscribeToEmergencyUpdates = (callback) => {
-    if(!socket) return;
-    socket.on('emergency_updated', (data) => {
-        console.log('Emergency updated');
+export const subscribeToHospitalAlerts = (callback) => {
+    if (!socket) return;
+    socket.off('hospital_alert');
+    socket.on('hospital_alert', (data) => {
+        console.log('Hospital alert received', data);
         callback(data);
     });
 };

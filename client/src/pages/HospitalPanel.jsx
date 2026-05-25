@@ -7,8 +7,10 @@ import {
     disconnectSocket, 
     subscribeToEmergencies, 
     getSocket, 
-    subscribeToAmbulanceMovement 
+    subscribeToAmbulanceMovement,
+    subscribeToHospitalAlerts
 } from '../services/socketService';
+import TrackAmbulanceWidget from '../components/Map/TrackAmbulanceWidget';
 
 const HospitalPanel = () => {
     const [hospital, setHospital] = useState(null);
@@ -20,6 +22,7 @@ const HospitalPanel = () => {
     const [ambulancePos, setAmbulancePos] = useState(null);
     const [isTracking, setIsTracking] = useState(false);
     const [activeEmergencyData, setActiveEmergencyData] = useState(null);
+    const [ambulanceAlert, setAmbulanceAlert] = useState("");
 
     useEffect(() => {
         const fetchHospital = async () => {
@@ -46,6 +49,12 @@ const HospitalPanel = () => {
                     // 3. Listen for live movement
                     subscribeToAmbulanceMovement((data) => {
                         setAmbulancePos({ lat: data.lat, lng: data.lng });
+                    });
+
+                    // 4. Listen for proximity alerts
+                    subscribeToHospitalAlerts((data) => {
+                        setAmbulanceAlert(data.message || "🚨 Ambulance is arriving shortly!");
+                        setTimeout(() => setAmbulanceAlert(""), 15000); // clear after 15s
                     });
 
                 } else {
@@ -91,6 +100,9 @@ const HospitalPanel = () => {
                     hospitalId: hospital._id,
                     ambulanceId: fullData.assignedAmbulance._id 
                 });
+                
+                // Join the emergency room to receive simulation events directly (like proximity alerts)
+                socket.emit('join_emergency_room', incomingEmergency.requestId);
             }
 
             // 3. Update UI States
@@ -126,6 +138,13 @@ const HospitalPanel = () => {
 
     return (
         <div className="admin-container">
+            {ambulanceAlert && (
+                <div className="emergency-modal-overlay" style={{ background: "transparent", alignItems: "flex-start", paddingTop: "20px" }}>
+                    <div className="success-banner" style={{ background: "var(--danger-color)", color: "white", padding: "20px 40px", fontSize: "1.2rem", border: "2px solid #b91c1c", animation: "pulseText 1.5s infinite" }}>
+                        🚨 PROXIMITY ALERT: {ambulanceAlert}
+                    </div>
+                </div>
+            )}
             {successMsg && <div className="success-banner">{successMsg}</div>}
             {error && <div className="error-msg">{error}</div>}
 
@@ -191,21 +210,13 @@ const HospitalPanel = () => {
                 </div>
 
                 {isTracking && activeEmergencyData && (
-                    <section className="live-map-section">
-                        <div className="map-card">
-                            <div className="map-header">
-                                <h3>🚑 Incoming Ambulance Live Feed</h3>
-                                <button className="btn-close-map" onClick={() => setIsTracking(false)}>Close Map</button>
-                            </div>
-                            <div style={{ padding: "30px", textAlign: "center" }}>
-                                <button 
-                                    className="btn btn-accept" 
-                                    style={{ padding: "15px 30px", fontSize: "1.2rem" }}
-                                    onClick={() => window.open(`/track/${activeEmergencyData._id}`, '_blank')}
-                                >
-                                    Open Live Tracking Feed 🚨
-                                </button>
-                            </div>
+                    <section className="map-card" style={{ padding: 0, overflow: "hidden" }}>
+                        <div className="map-header" style={{ padding: "20px 30px", marginBottom: 0, borderBottom: "1px solid var(--border-color)", background: "var(--bg-color)" }}>
+                            <h3 style={{ color: "var(--danger-color)", margin: 0 }}>🚑 Incoming Ambulance Live Feed</h3>
+                            <button className="btn-close-map" onClick={() => setIsTracking(false)}>Close Map</button>
+                        </div>
+                        <div style={{ padding: "20px" }}>
+                            <TrackAmbulanceWidget emergencyId={activeEmergencyData._id} />
                         </div>
                     </section>
                 )}

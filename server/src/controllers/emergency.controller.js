@@ -73,3 +73,29 @@ exports.getEmergency = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+// 4. Complete Emergency (New Feature)
+exports.completeEmergency = async (req, res) => {
+  try {
+    const { emergencyId } = req.body;
+    const emergency = await Emergency.findById(emergencyId);
+    
+    if (!emergency) {
+      return res.status(404).json({ message: "Emergency not found" });
+    }
+
+    const ambulance = await Ambulance.findById(emergency.assignedAmbulance);
+    
+    if (ambulance) {
+      ambulance.status = "AVAILABLE";
+      await ambulance.save();
+    }
+
+    emergency.status = "COMPLETED";
+    await emergency.save();
+
+    res.json({ message: "Dispatch completed successfully", emergency });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};

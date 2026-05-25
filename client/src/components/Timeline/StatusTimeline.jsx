@@ -20,18 +20,18 @@ const StatusTimeline = () => {
     const currentIndex = getCurrentIndex();
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-md mb-6">
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-bold">Emergency Status</h2>
+        <div style={{ background: "var(--bg-color)", padding: "25px", borderRadius: "var(--radius-lg)", boxShadow: "inset 0 2px 10px rgba(0,0,0,0.02)", border: "1px solid var(--border-color)" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "30px" }}>
+                <h2 style={{ fontSize: "1.1rem", margin: 0, color: "var(--text-main)", fontWeight: "700", textTransform: "uppercase", letterSpacing: "1px" }}>Timeline Progress</h2>
                 {eta !== null && (
-                    <div className="text-blue-600 font-semibold bg-blue-50 px-3 py-1 rounded-full">
+                    <div style={{ color: "var(--primary-color)", fontWeight: "bold", background: "rgba(15, 118, 110, 0.1)", padding: "8px 16px", borderRadius: "var(--radius-full)", border: "1px solid rgba(15, 118, 110, 0.2)" }}>
                         ETA: {eta} seconds
                     </div>
                 )}
             </div>
             
-            <div className="flex justify-between items-center relative">
-                <div className="absolute left-0 top-1/2 w-full h-1 bg-gray-200 -z-10 transform -translate-y-1/2"></div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", position: "relative" }}>
+                <div style={{ position: "absolute", left: 0, top: "20px", width: "100%", height: "4px", background: "var(--border-color)", zIndex: 0, borderRadius: "2px" }}></div>
                 
                 {steps.map((step, index) => {
                     const isCompleted = index <= currentIndex;
@@ -39,15 +39,30 @@ const StatusTimeline = () => {
                     const Icon = step.icon;
                     
                     return (
-                        <div key={step.key} className="flex flex-col items-center bg-white px-2">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center border-4 ${
-                                isCompleted ? 'border-green-500 bg-green-50 text-green-500' : 'border-gray-200 bg-white text-gray-400'
-                            }`}>
+                        <div key={step.key} style={{ display: "flex", flexDirection: "column", alignItems: "center", background: "var(--bg-color)", padding: "0 10px", zIndex: 1, position: "relative", minWidth: "100px", textAlign: "center" }}>
+                            <div style={{ 
+                                width: "45px", 
+                                height: "45px", 
+                                borderRadius: "50%", 
+                                display: "flex", 
+                                alignItems: "center", 
+                                justifyContent: "center", 
+                                border: `4px solid ${isCompleted ? 'var(--success-color)' : 'var(--border-color)'}`,
+                                background: isCompleted ? 'rgba(16, 185, 129, 0.1)' : 'var(--surface-color)',
+                                color: isCompleted ? 'var(--success-color)' : 'var(--text-muted)',
+                                transition: "all 0.3s ease",
+                                transform: isActive ? "scale(1.15)" : "scale(1)",
+                                boxShadow: isActive ? "0 0 15px rgba(16, 185, 129, 0.4)" : "none"
+                            }}>
                                 <Icon size={20} />
                             </div>
-                            <span className={`text-xs mt-2 font-medium ${
-                                isActive ? 'text-gray-900' : 'text-gray-500'
-                            }`}>
+                            <span style={{ 
+                                fontSize: "0.85rem", 
+                                marginTop: "12px", 
+                                fontWeight: isActive ? "700" : "600",
+                                color: isActive ? "var(--text-main)" : "var(--text-muted)",
+                                lineHeight: "1.2"
+                            }}>
                                 {step.label}
                             </span>
                         </div>

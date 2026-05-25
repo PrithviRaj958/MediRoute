@@ -1,17 +1,16 @@
 import React from "react";
 import EmergencyPage from "./EmergencyPage";
-import "../operator.css";
+import "../HospitalPanel.css"; // Reuse the polished dashboard styles
 
 const OperatorDashboard = () => {
   return (
-    <div className="container">
-        <div className="Header"><h1>🚑 MediRoute Operator Dashboard</h1></div>
-        <div className="content">
-            <div className="card">
-            <h2>Create & Manage Emergencies</h2>
+    <div className="admin-container">
+        <header className="admin-header">
+            <h1>🚑 MediRoute Operator Terminal</h1>
+        </header>
+        <main className="dashboard-content" style={{ padding: "20px 0" }}>
             <EmergencyPage />
-            </div>
-        </div>
+        </main>
     </div>
   );
 }
