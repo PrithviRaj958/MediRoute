@@ -61,11 +61,27 @@ export const subscribeToAmbulanceMovement = (callback) => {
     });
 };
 
+export const subscribeToLocationUpdates = (callback) => {
+    if (!socket) return;
+    socket.off('location_update');
+    socket.on('location_update', (data) => {
+        callback(data);
+    });
+};
+
 export const subscribeToHospitalAlerts = (callback) => {
     if (!socket) return;
     socket.off('hospital_alert');
     socket.on('hospital_alert', (data) => {
         console.log('Hospital alert received', data);
+        callback(data);
+    });
+};
+
+export const subscribeToEmergencyCompleted = (callback) => {
+    if (!socket) return;
+    socket.off('emergency_completed_hospital');
+    socket.on('emergency_completed_hospital', (data) => {
         callback(data);
     });
 };

@@ -5,11 +5,16 @@ const {
   createEmergency,
   driverAcceptRequest,
   getEmergency,
-  completeEmergency
+  completeEmergency,
+  getAdmittedPatients,
+  dischargePatient
 } = require("../controllers/emergency.controller");
+const { authMiddleware } = require("../middlewares/auth.middleware");
 
 router.post("/", createEmergency);
-router.post("/driver-accept", driverAcceptRequest);
-router.post("/complete", completeEmergency);
+router.post("/driver-accept", authMiddleware, driverAcceptRequest);
+router.post("/complete", authMiddleware, completeEmergency);
+router.get("/admitted", authMiddleware, getAdmittedPatients);
+router.post("/discharge", authMiddleware, dischargePatient);
 router.get("/:id", getEmergency);
 module.exports = router;

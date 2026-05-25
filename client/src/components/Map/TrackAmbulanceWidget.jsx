@@ -4,19 +4,20 @@ import { useEmergency } from "../../context/EmergencyContext";
 import LiveMapView from "./LiveMapView";
 import StatusTimeline from "../Timeline/StatusTimeline";
 
-const TrackAmbulanceWidget = ({ emergencyId }) => {
+const TrackAmbulanceWidget = ({ emergencyId, activeEmergencies = [], isFleetView = false, hospital = null, fleetPositions = {} }) => {
     const { joinEmergency, status, eta } = useEmergency();
     const [emergencyDetails, setEmergencyDetails] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(!isFleetView);
 
     useEffect(() => {
-        if (emergencyId) {
+        if (emergencyId && !isFleetView) {
             joinEmergency(emergencyId);
         }
-    }, [emergencyId, joinEmergency]);
+    }, [emergencyId, joinEmergency, isFleetView]);
 
     useEffect(() => {
         const fetchDetails = async () => {
+            if (isFleetView) return;
             try {
                 // Fetch complete emergency details (including coords) from API
                 const res = await axios.get(`http://localhost:5000/api/emergencies/${emergencyId}`);
@@ -31,13 +32,13 @@ const TrackAmbulanceWidget = ({ emergencyId }) => {
         if (emergencyId) {
             fetchDetails();
         }
-    }, [emergencyId]);
+    }, [emergencyId, isFleetView]);
 
-    if (loading) {
+    if (loading && !isFleetView) {
         return <div style={{ padding: "20px", textAlign: "center", color: "var(--text-muted)" }}>Loading tracking data...</div>;
     }
 
-    if (!emergencyDetails) {
+    if (!emergencyDetails && !isFleetView) {
         return <div style={{ padding: "20px", textAlign: "center", color: "var(--danger-color)" }}>Emergency not found.</div>;
     }
 
@@ -50,13 +51,16 @@ const TrackAmbulanceWidget = ({ emergencyId }) => {
         };
     };
 
-    const patientLocation = {
-        lat: parseFloat(emergencyDetails.location.lat) || extractCoords(emergencyDetails)?.lat,
-        lng: parseFloat(emergencyDetails.location.lng) || extractCoords(emergencyDetails)?.lng,
-    };
-    
-    const hospitalLocation = extractCoords(emergencyDetails.assignedHospital);
-    const initialAmbulanceLocation = extractCoords(emergencyDetails.assignedAmbulance);
+    let patientLocation, hospitalLocation, initialAmbulanceLocation;
+
+    if (!isFleetView) {
+        patientLocation = {
+            lat: parseFloat(emergencyDetails.location.lat) || extractCoords(emergencyDetails)?.lat,
+            lng: parseFloat(emergencyDetails.location.lng) || extractCoords(emergencyDetails)?.lng,
+        };
+        hospitalLocation = extractCoords(emergencyDetails.assignedHospital);
+        initialAmbulanceLocation = extractCoords(emergencyDetails.assignedAmbulance);
+    }
 
     return (
         <div style={{ width: "100%", background: "var(--surface-color)", padding: "30px", borderRadius: "var(--radius-lg)", boxShadow: "var(--shadow-lg)", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "25px" }}>
@@ -71,7 +75,7 @@ const TrackAmbulanceWidget = ({ emergencyId }) => {
                 </div>
             </div>
 
-            <StatusTimeline />
+            {!isFleetView && <StatusTimeline />}
 
             {/* Map Container */}
             <div style={{ borderRadius: "var(--radius-lg)", overflow: "hidden", border: "4px solid var(--border-color)", boxShadow: "inset 0 0 20px rgba(0,0,0,0.1)" }}>
@@ -79,27 +83,33 @@ const TrackAmbulanceWidget = ({ emergencyId }) => {
                     patientLocation={patientLocation}
                     hospitalLocation={hospitalLocation}
                     initialAmbulanceLocation={initialAmbulanceLocation}
+                    isFleetView={isFleetView}
+                    activeEmergencies={activeEmergencies}
+                    hospital={hospital}
+                    fleetPositions={fleetPositions}
                 />
             </div>
 
-            {/* Details Cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px" }}>
-                <div style={{ background: "linear-gradient(135deg, var(--bg-color), var(--surface-color))", padding: "20px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-sm)" }}>
-                    <h3 style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "1px", display: "flex", alignItems: "center", gap: "8px" }}>
-                        🚑 Dispatch Unit
-                    </h3>
-                    <p style={{ fontWeight: "800", margin: "0 0 5px 0", fontSize: "1.2rem", color: "var(--text-main)" }}>{emergencyDetails.assignedAmbulance?.vehicleNumber || 'N/A'}</p>
-                    <p style={{ fontSize: "0.95rem", color: "var(--text-main)", margin: 0 }}>Driver: <strong>{emergencyDetails.assignedAmbulance?.driverName || 'N/A'}</strong></p>
-                </div>
+            {/* Details Cards (Hidden in Fleet View) */}
+            {!isFleetView && (
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "20px", marginTop: "20px" }}>
+                    <div style={{ background: "linear-gradient(135deg, var(--bg-color), var(--surface-color))", padding: "20px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-sm)" }}>
+                        <h3 style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "1px", display: "flex", alignItems: "center", gap: "8px" }}>
+                            🚑 Dispatch Unit
+                        </h3>
+                        <p style={{ fontWeight: "800", margin: "0 0 5px 0", fontSize: "1.2rem", color: "var(--text-main)" }}>{emergencyDetails?.assignedAmbulance?.vehicleNumber || 'N/A'}</p>
+                        <p style={{ fontSize: "0.95rem", color: "var(--text-main)", margin: 0 }}>Driver: <strong>{emergencyDetails?.assignedAmbulance?.driverName || 'N/A'}</strong></p>
+                    </div>
 
-                <div style={{ background: "linear-gradient(135deg, var(--bg-color), var(--surface-color))", padding: "20px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-sm)" }}>
-                    <h3 style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "1px", display: "flex", alignItems: "center", gap: "8px" }}>
-                        👤 Subject Profile
-                    </h3>
-                    <p style={{ fontWeight: "800", margin: "0 0 5px 0", fontSize: "1.2rem", color: "var(--text-main)" }}>{emergencyDetails.patientName || 'Unknown'}</p>
-                    <p style={{ fontSize: "0.95rem", margin: 0, color: "var(--danger-color)", fontWeight: "600" }}>Triage: {emergencyDetails.severity}</p>
+                    <div style={{ background: "linear-gradient(135deg, var(--bg-color), var(--surface-color))", padding: "20px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", boxShadow: "var(--shadow-sm)" }}>
+                        <h3 style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "10px", textTransform: "uppercase", letterSpacing: "1px", display: "flex", alignItems: "center", gap: "8px" }}>
+                            👤 Subject Profile
+                        </h3>
+                        <p style={{ fontWeight: "800", margin: "0 0 5px 0", fontSize: "1.2rem", color: "var(--text-main)" }}>{emergencyDetails?.patientName || 'Unknown'}</p>
+                        <p style={{ fontSize: "0.95rem", margin: 0, color: "var(--danger-color)", fontWeight: "600" }}>Triage: {emergencyDetails?.severity}</p>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

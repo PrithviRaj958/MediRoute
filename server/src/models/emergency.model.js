@@ -2,11 +2,6 @@ const mongoose = require("mongoose");
 
 const emergencySchema = new mongoose.Schema({
   patientName: String,
-  emergencyType: {
-    type: String,
-    enum: ["Cardiac", "Trauma", "Respiratory", "Transport", "Other"],
-    default: "Other"
-  },
   location: {
     type: {
       type: String,
@@ -17,12 +12,12 @@ const emergencySchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["PENDING", "ASSIGNED", "IN_PROGRESS", "COMPLETED"],
+    enum: ["PENDING", "ASSIGNED", "COMPLETED", "DISCHARGED"],
     default: "PENDING"
   },
   severity: {
     type: String,
-    enum: ["Low", "Medium", "High", "Critical"],
+    enum: ["Low", "Medium", "High"],
     default: "Medium" 
   },
   assignedHospital: {
@@ -32,11 +27,6 @@ const emergencySchema = new mongoose.Schema({
   assignedAmbulance: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Ambulance"
-  },
-  patientProfile: {
-    vitals: String, // e.g., "BP: 120/80, Pulse: 80"
-    allergies: String,
-    medicalHistory: String
   }
 }, { timestamps: true });
 
