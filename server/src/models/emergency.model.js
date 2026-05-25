@@ -12,7 +12,7 @@ const emergencySchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["PENDING", "ASSIGNED", "COMPLETED"],
+    enum: ["PENDING", "ASSIGNED", "COMPLETED", "DISCHARGED"],
     default: "PENDING"
   },
   severity: {

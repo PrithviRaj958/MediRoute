@@ -99,3 +99,49 @@ exports.completeEmergency = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+// 5. Get Admitted Patients for Hospital
+exports.getAdmittedPatients = async (req, res) => {
+    try {
+        const hospitalId = req.user.hospitalId || req.user.id;
+        if (!hospitalId) return res.status(400).json({ message: "No Hospital ID found in token" });
+
+        const patients = await Emergency.find({
+            assignedHospital: hospitalId,
+            status: "COMPLETED" // Completed the ambulance run = Admitted
+        }).sort({ updatedAt: -1 });
+
+        res.status(200).json(patients);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};
+
+// 6. Discharge Patient
+exports.dischargePatient = async (req, res) => {
+    try {
+        const { emergencyId } = req.body;
+        const hospitalId = req.user.hospitalId || req.user.id;
+
+        const emergency = await Emergency.findOne({ _id: emergencyId, assignedHospital: hospitalId });
+        if (!emergency) return res.status(404).json({ message: "Patient not found" });
+
+        if (emergency.status === "DISCHARGED") {
+            return res.status(400).json({ message: "Patient already discharged" });
+        }
+
+        emergency.status = "DISCHARGED";
+        await emergency.save();
+
+        // Free up a bed
+        const hospital = await Hospital.findById(hospitalId);
+        if (hospital && hospital.availableBeds < hospital.totalBeds) {
+            hospital.availableBeds += 1;
+            await hospital.save();
+        }
+
+        res.status(200).json({ message: "Patient discharged successfully", emergency });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

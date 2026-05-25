@@ -130,6 +130,12 @@ function DriverDashboard() {
         { emergencyId: activeEmergency._id }, 
         getAuthHeader()
       );
+      
+      const socket = getSocket();
+      if (socket) {
+        socket.emit("emergency_completed", { emergencyId: activeEmergency._id, hospitalId: activeEmergency.assignedHospital._id });
+      }
+
       setActiveEmergency(null);
       showToast("Dispatch Completed successfully! You are now Available.");
       fetchAmbulance();

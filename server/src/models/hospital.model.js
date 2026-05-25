@@ -27,6 +27,19 @@ const hospitalSchema = new mongoose.Schema(
             type : Number,
             default : 0
         },
+        icuBeds : {
+            type: Number,
+            default: 0
+        },
+        bloodSupplyStatus : {
+            type: String,
+            enum: ['Stable', 'Low', 'Critical'],
+            default: 'Stable'
+        },
+        traumaTeamAvailable : {
+            type: Boolean,
+            default: true
+        },
         location : {
             type : {
                 type : String ,

@@ -94,6 +94,14 @@ const socketManager = (io) => {
             io.to(hospitalId).emit("ambulance_moved", { lat, lng, ambulanceId });
         });
 
+        socket.on("emergency_completed", (data) => {
+            const { emergencyId, hospitalId } = data;
+            console.log(`Emergency ${emergencyId} completed. Notifying hospital ${hospitalId}`);
+            if (hospitalId) {
+                io.to(hospitalId).emit("emergency_completed_hospital", { emergencyId });
+            }
+        });
+
         socket.on("disconnect", () => {
             console.log(`User disconnected: ${socket.id}`);
         });
