@@ -39,6 +39,8 @@ const Login = () => {
       setMessage(res.data.message);
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("role", res.data.user.role);
+      localStorage.setItem("name", res.data.user.name);
+      localStorage.setItem("userId", res.data.user.id);
       localStorage.setItem("hospitalId", res.data.user.hospitalId || "");
       
       // Smooth redirect to dashboard

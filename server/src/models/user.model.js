@@ -19,12 +19,17 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["OPERATOR", "DRIVER", "HOSPITAL_ADMIN"],
+      enum: ["OPERATOR", "DRIVER", "HOSPITAL_ADMIN", "ADMIN"],
       required: true
     },
     hospitalId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Hospital",
+      default: null
+    },
+    ambulanceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Ambulance",
       default: null
     }
   },

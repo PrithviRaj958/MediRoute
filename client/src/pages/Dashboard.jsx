@@ -18,15 +18,15 @@ const Dashboard= () => {
     }, 30);
 
     const timer = setTimeout(() => {
-      // In a real app, these would navigate to different routes
-      if (storedRole === "OPERATOR") {
+      if (storedRole === "ADMIN") {
+        navigate("/admin");
+      } else if (storedRole === "OPERATOR") {
         navigate("/operator");
       } else if (storedRole === "HOSPITAL_ADMIN") {
-        if (!hospitalId) {
-          navigate("/login");
-        } else {
-          navigate("/hospital-admin");
-        }
+        // Always redirect to hospital panel — the panel itself shows an
+        // "awaiting assignment" message if the admin hasn't linked this
+        // user to a hospital yet. No silent bounce to /login.
+        navigate("/hospital-admin");
       } else if (storedRole === "DRIVER") {
         navigate("/driver");
       } else {

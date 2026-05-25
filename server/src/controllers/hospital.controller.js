@@ -37,30 +37,35 @@ exports.createHospital = async(req , res) => {
 
 exports.updateBeds = async(req, res) =>{
     try {
-        console.log("User object from token:", req.user);
-        const id = req.user.hospitalId || req.user.id;
-        if (!id) {
-            return res.status(400).json({ message: "No Hospital ID found in token" });
-        }
-        const availableBeds = req.body.availableBeds ;
+        const availableBeds = req.body.availableBeds;
         const action = req.body.action;
-        if( availableBeds <= 0){
+        if(availableBeds <= 0){
             return res.status(400).json({message : "Quantity must be greater than zero"});
         }
-        const hospital = await Hospital.findById(id);
-        if(!hospital){
-            return res.status(404).json({message : "Hospital not found"});
+
+        // Always do a fresh DB lookup by adminId — so assignment works without re-login
+        let hospital = await Hospital.findOne({ adminId: req.user.userId });
+        // Fallback: hospitalId baked into JWT at login time
+        if (!hospital && req.user.hospitalId) {
+            hospital = await Hospital.findById(req.user.hospitalId);
         }
+        if(!hospital){
+            return res.status(404).json({
+                message : "No hospital is assigned to your account yet. Contact the system administrator.",
+                assigned: false
+            });
+        }
+
         if(action === "increment"){
             if(hospital.availableBeds + availableBeds > hospital.totalBeds){
                 return res.status(400).json({message : "Available beds cannot exceed total beds"});
             }
-            hospital.availableBeds += availableBeds ;
+            hospital.availableBeds += availableBeds;
         }else if(action === "decrement"){
             if(hospital.availableBeds - availableBeds < 0){
                 return res.status(400).json({message : "Not enough beds available"});
             }
-            hospital.availableBeds -= availableBeds ;
+            hospital.availableBeds -= availableBeds;
         }
         await hospital.save();
         res.status(200).json({
@@ -72,6 +77,7 @@ exports.updateBeds = async(req, res) =>{
         res.status(500).json({message :error.message});
     }
 };
+
 
 exports.getHospitals = async(req, res) => {
     try {
@@ -100,10 +106,23 @@ exports.getHospitals = async(req, res) => {
 
 exports.getMyHospital = async (req, res) => {
   try {
-    const hospital = await Hospital.findById(req.user.hospitalId);
-    if (!hospital) return res.status(404).json({ message: "Hospital not found" });
-    res.status(200).json(hospital);
+    // Primary: fresh DB lookup — works immediately after Admin assigns the user, no re-login needed
+    let hospital = await Hospital.findOne({ adminId: req.user.userId });
+
+    // Fallback: JWT hospitalId (valid when user logged in after being assigned)
+    if (!hospital && req.user.hospitalId) {
+      hospital = await Hospital.findById(req.user.hospitalId);
+    }
+
+    if (!hospital) {
+      return res.status(404).json({
+        message: "No hospital is assigned to your account yet. Please contact the system administrator.",
+        assigned: false
+      });
+    }
+
+    res.status(200).json({ ...hospital.toObject(), assigned: true });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-};
+};

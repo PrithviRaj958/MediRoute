@@ -16,6 +16,7 @@ const HospitalPanel = () => {
     const [hospital, setHospital] = useState(null);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
+    const [awaitingAssignment, setAwaitingAssignment] = useState(false);
     const [updateValue, setUpdateValue] = useState(1);  
     const [incomingEmergency, setIncomingEmergency] = useState(null);
     const [successMsg, setSuccessMsg] = useState("");
@@ -61,7 +62,12 @@ const HospitalPanel = () => {
                     throw new Error("Hospital data is invalid");
                 }
             } catch (err) {
-                setError("Failed to fetch hospital data");
+                // Check if the 404 is because this user isn't assigned to a hospital yet
+                if (err.response?.status === 404 && err.response?.data?.assigned === false) {
+                    setAwaitingAssignment(true);
+                } else {
+                    setError("Failed to fetch hospital data. Please try again.");
+                }
                 setLoading(false);
             }
         };
@@ -135,6 +141,62 @@ const HospitalPanel = () => {
     };
 
     if (loading) return <div className="loader">Loading Dashboard...</div>;
+
+    // Hospital admin registered but not yet linked to a hospital by the System Admin
+    if (awaitingAssignment) {
+        return (
+            <div style={{
+                minHeight: '100vh',
+                background: '#050810',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontFamily: 'Inter, sans-serif',
+                flexDirection: 'column',
+                gap: '1rem',
+                padding: '2rem',
+                textAlign: 'center'
+            }}>
+                <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>🏥</div>
+                <h2 style={{ color: '#f1f5f9', fontSize: '1.4rem', fontWeight: 700 }}>Account Pending Assignment</h2>
+                <p style={{ color: '#94a3b8', maxWidth: '420px', lineHeight: 1.6 }}>
+                    Your account has been created successfully, but the System Administrator
+                    hasn't linked it to a hospital yet.
+                </p>
+                <p style={{ color: '#64748b', fontSize: '0.85rem' }}>
+                    Please contact your System Admin and ask them to assign your account
+                    (<strong style={{ color: '#94a3b8' }}>{localStorage.getItem('name')}</strong>) to your hospital
+                    from the Admin Panel.
+                </p>
+                <div style={{
+                    marginTop: '1rem',
+                    background: 'rgba(99,102,241,0.1)',
+                    border: '1px solid rgba(99,102,241,0.25)',
+                    borderRadius: '12px',
+                    padding: '1rem 1.5rem',
+                    color: '#6366f1',
+                    fontSize: '0.85rem'
+                }}>
+                    🛡️ Once assigned, refresh this page — no re-login required.
+                </div>
+                <button
+                    onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
+                    style={{
+                        marginTop: '1rem',
+                        background: 'rgba(255,255,255,0.06)',
+                        border: '1px solid rgba(255,255,255,0.1)',
+                        color: '#94a3b8',
+                        padding: '0.6rem 1.5rem',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontFamily: 'Inter, sans-serif'
+                    }}
+                >
+                    Sign Out
+                </button>
+            </div>
+        );
+    }
 
     return (
         <div className="admin-container">

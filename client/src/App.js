@@ -8,6 +8,7 @@ import Dashboard from "./pages/Dashboard.jsx";
 import DriverDashboard from "./pages/DriverDashboard";
 import EmergencyPage from "./pages/EmergencyPage";
 import HospitalPanel from "./pages/HospitalPanel.jsx";
+import AdminDashboard from "./pages/admin/AdminDashboard.jsx";
 
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 import OperatorDashboard from "./pages/OperatorDashboard.jsx";
@@ -30,6 +31,12 @@ function App() {
         <Route path="/dashboard" element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } />
+
+        <Route path="/admin" element={
+          <ProtectedRoute allowedRoles="ADMIN">
+            <AdminDashboard />
           </ProtectedRoute>
         } />
 
