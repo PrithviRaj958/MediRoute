@@ -39,7 +39,10 @@ export default function AssignAdminModal({ hospital, onClose, onAssigned }) {
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <p style={{ fontSize: '0.85rem', color: '#64748b', marginBottom: '1.25rem' }}>
-          Assigning admin to: <strong style={{ color: 'var(--text-main)' }}>{hospital.name}</strong>
+          Assigning admin to:{' '}
+          <strong style={{ color: 'var(--text-main)' }}>{hospital.name}</strong>
+          {' '}
+          <span style={{ fontSize: '0.75rem', color: '#475569' }}>({hospital.totalBeds} beds)</span>
         </p>
         {error && <div className="error-msg">{error}</div>}
         <form onSubmit={handleSubmit}>
@@ -47,6 +50,10 @@ export default function AssignAdminModal({ hospital, onClose, onAssigned }) {
             <label>Select Hospital Admin User</label>
             {fetching ? (
               <div className="loading-spinner"><div className="spinner" /></div>
+            ) : users.length === 0 ? (
+              <div style={{ color: '#475569', fontSize: '0.85rem', padding: '0.75rem 0' }}>
+                No hospital admins found. Register a hospital admin account first.
+              </div>
             ) : (
               <select value={selectedUser} onChange={(e) => setSelectedUser(e.target.value)} required>
                 <option value="">— Choose a user —</option>
@@ -63,7 +70,7 @@ export default function AssignAdminModal({ hospital, onClose, onAssigned }) {
           </p>
           <div className="modal-actions">
             <button type="button" className="btn-secondary" onClick={onClose}>Cancel</button>
-            <button type="submit" className="btn-primary" disabled={loading || fetching}>
+            <button type="submit" className="btn-primary" disabled={loading || fetching || users.length === 0}>
               {loading ? 'Assigning...' : 'Assign Admin'}
             </button>
           </div>

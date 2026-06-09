@@ -27,6 +27,11 @@ const hospitalSchema = new mongoose.Schema(
             type : Number,
             default : 0
         },
+        adminId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null
+        },
         icuBeds : {
             type: Number,
             default: 0
