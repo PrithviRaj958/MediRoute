@@ -2,23 +2,49 @@ const Emergency = require("../models/emergency.model");
 const Ambulance = require("../models/ambulance.model");
 const Hospital = require("../models/hospital.model");
 
-// 1. Create Emergency Incident (Unchanged)
+// 1. Create Emergency Incident (Updated for sequential nearest ambulance dispatch)
 exports.createEmergency = async (req, res) => {
   try {
     const { patientName, lng, lat, severity } = req.body;
+
+    // Find all available ambulances, sorted by proximity to patient location
+    const availableAmbulances = await Ambulance.find({
+      status: "AVAILABLE",
+      location: {
+        $near: {
+          $geometry: {
+            type: "Point",
+            coordinates: [parseFloat(lng), parseFloat(lat)]
+          }
+        }
+      }
+    });
+
+    if (availableAmbulances.length === 0) {
+      return res.status(400).json({
+        message: "No available ambulances found in the vicinity. Please ensure drivers are online and available."
+      });
+    }
+
+    const candidateAmbulances = availableAmbulances.map(a => a._id);
+
     const emergency = await Emergency.create({
       patientName,
       severity,
-      location: { type: "Point", coordinates: [lng, lat] },
-      status: "PENDING"
+      location: { type: "Point", coordinates: [parseFloat(lng), parseFloat(lat)] },
+      status: "PENDING",
+      candidateAmbulances,
+      ignoredAmbulances: [],
+      currentAmbulanceIndex: 0
     });
+
     res.status(201).json(emergency);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
 
-// 2. Driver Accepts Request - UPDATED for Instant UI Sync
+// 2. Driver Accepts Request - UPDATED for Hospital Selection Loop
 exports.driverAcceptRequest = async (req, res) => {
   try {
     const { emergencyId, ambulanceId } = req.body;
@@ -29,38 +55,50 @@ exports.driverAcceptRequest = async (req, res) => {
       return res.status(404).json({ message: "Not found" });
     }
 
-    const nearestHospital = await Hospital.findOne({
+    // Find all candidate hospitals with available beds > 0, sorted by proximity to emergency location
+    const candidateHospitals = await Hospital.find({
       availableBeds: { $gt: 0 },
-      location: { $near: { $geometry: emergency.location } }
+      location: {
+        $near: {
+          $geometry: emergency.location
+        }
+      }
     });
 
-    if (!nearestHospital) {
-      return res.status(404).json({ message: "No hospitals found" });
+    if (candidateHospitals.length === 0) {
+      return res.status(404).json({ message: "No hospitals with available beds found" });
     }
 
     emergency.assignedAmbulance = ambulance._id;
-    emergency.assignedHospital = nearestHospital._id;
-    emergency.status = "ASSIGNED";
-    ambulance.status = "BUSY"; // Update status
+    // Keep assignedHospital null until accepted
+    emergency.assignedHospital = null;
+    emergency.candidateHospitals = candidateHospitals.map(h => h._id);
+    emergency.ignoredHospitals = [];
+    emergency.currentHospitalIndex = 0;
+    
+    // Status is ASSIGNED_DRIVER while waiting for hospital confirmation
+    emergency.status = "PENDING"; 
+    
+    ambulance.status = "BUSY"; 
 
     await emergency.save();
-    const updatedAmbulance = await ambulance.save(); // Save and capture[cite: 2]
+    const updatedAmbulance = await ambulance.save(); 
 
     const updatedEmergency = await Emergency.findById(emergencyId)
-      .populate("assignedAmbulance")
-      .populate("assignedHospital");
+      .populate("assignedAmbulance");
 
-    // 🔥 FIX: Return the updated ambulance so the UI refreshes[cite: 2]
+    // Return the updated state along with the first candidate hospital's ID for socket routing
     res.json({
-      message: "Driver accepted",
+      message: "Driver accepted, searching hospital",
       emergency: updatedEmergency,
       ambulance: updatedAmbulance, 
-      hospitalId: nearestHospital._id 
+      hospitalId: candidateHospitals[0]._id 
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 // 3. Get Single Emergency (Unchanged)
 exports.getEmergency = async (req, res) => {
   try {

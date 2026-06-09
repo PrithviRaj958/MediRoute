@@ -1,4 +1,4 @@
-const activeSimulations = new Map();
+ const activeSimulations = new Map();
 
 // Helper to calculate distance in meters between two lat/lng points
 const getDistance = (lat1, lon1, lat2, lon2) => {

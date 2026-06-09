@@ -159,8 +159,8 @@ const HospitalPanel = () => {
             setIncomingEmergency(null);
             setSuccessMsg("✅ Emergency Accepted. Tracking Ambulance..."); 
             
-            // 4. Update Database
-            await handleUpdate('decrement', 1);
+            // 4. Update local state (Backend already decremented it in DB via socket handshake)
+            setHospital(prev => ({ ...prev, availableBeds: Math.max(0, prev.availableBeds - 1) }));
 
             // Clear success message after 4s
             setTimeout(() => setSuccessMsg(""), 4000);

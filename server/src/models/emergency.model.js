@@ -27,6 +27,30 @@ const emergencySchema = new mongoose.Schema({
   assignedAmbulance: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Ambulance"
+  },
+  candidateAmbulances: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Ambulance"
+  }],
+  ignoredAmbulances: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Ambulance"
+  }],
+  currentAmbulanceIndex: {
+    type: Number,
+    default: 0
+  },
+  candidateHospitals: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Hospital"
+  }],
+  ignoredHospitals: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Hospital"
+  }],
+  currentHospitalIndex: {
+    type: Number,
+    default: 0
   }
 }, { timestamps: true });
 

@@ -14,16 +14,14 @@ function DriverDashboard() {
   const [lat, setLat] = useState("");
   const [activeEmergency, setActiveEmergency] = useState(null);
   const [pendingRequest, setPendingRequest] = useState(null); 
-  // 🔥 NEW: Track if we are waiting for the hospital to confirm
   const [isWaiting, setIsWaiting] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
+  const [countdown, setCountdown] = useState(15);
 
   const showToast = (message) => {
       setToastMessage(message);
-      setTimeout(() => setToastMessage(null), 2000);
+      setTimeout(() => setToastMessage(null), 2500);
   };
-
-  const token = localStorage.getItem("token");
 
   const getAuthHeader = () => ({
     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
@@ -45,34 +43,93 @@ function DriverDashboard() {
     fetchAmbulance();
   }, [fetchAmbulance]);
 
+  // Handle countdown timer for pending request auto-decline
+  useEffect(() => {
+    if (!pendingRequest) return;
+    setCountdown(15);
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleDeclineRequest();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [pendingRequest]);
+
+  const handleDeclineRequest = useCallback(() => {
+    if (!pendingRequest || !ambulance) return;
+    const socket = getSocket();
+    if (socket) {
+      socket.emit("driver_decline_dispatch", {
+        emergencyId: pendingRequest._id,
+        ambulanceId: ambulance._id
+      });
+    }
+    setPendingRequest(null);
+    showToast("Dispatch Ignored.");
+  }, [pendingRequest, ambulance]);
+
   useEffect(() => {
     if (!ambulance) return;
     const socket = initiateSocketConnection(); 
     
     if (socket) {
+      // Register this driver socket to their specific ambulance room
+      socket.emit("join_ambulance_room", ambulance._id);
+
+      socket.on("connect", () => {
+        socket.emit("join_ambulance_room", ambulance._id);
+      });
+
       socket.on("incoming_dispatch_request", (data) => {
         setPendingRequest(data);
       });
 
       socket.on("handshake_completed", async (data) => {
-        if (String(data.ambulanceId) === String(ambulance._id)) {
-          // 🔥 FIX: Stop showing the waiting message once confirmed
+        const targetAmbulanceId = data.ambulanceId?._id || data.ambulanceId;
+        if (String(targetAmbulanceId) === String(ambulance._id)) {
           setIsWaiting(false); 
           showToast("Hospital Confirmed! Start Navigating.");
+          
+          // Fetch the fully populated emergency with assignedHospital details
+          try {
+            const emRes = await axios.get(`http://localhost:5000/api/emergencies/${data.requestId}`, getAuthHeader());
+            setActiveEmergency(emRes.data);
+          } catch (err) {
+            console.error("Failed to fetch emergency details:", err);
+          }
+
           await fetchAmbulance(); 
+        }
+      });
+
+      socket.on("handshake_failed", async (data) => {
+        const targetAmbulanceId = data.ambulanceId?._id || data.ambulanceId;
+        if (String(targetAmbulanceId) === String(ambulance._id)) {
+          setIsWaiting(false);
+          setActiveEmergency(null);
+          showToast("Routing failed: all hospitals declined.");
+          await fetchAmbulance();
         }
       });
     }
 
     return () => {
+        socket?.off("connect");
         socket?.off("incoming_dispatch_request");
         socket?.off("handshake_completed");
+        socket?.off("handshake_failed");
     };
-  }, [ambulance, fetchAmbulance]);
+  }, [ambulance, fetchAmbulance, activeEmergency]);
 
   const handleAcceptRequest = async () => {
     try {
-      // 🔥 Start waiting state
       setIsWaiting(true);
 
       const res = await axios.post(
@@ -81,6 +138,7 @@ function DriverDashboard() {
         getAuthHeader()
       );
 
+      // Save emergency locally (but assignedHospital is null initially)
       setActiveEmergency(res.data.emergency);
       setAmbulance(res.data.ambulance); 
       setPendingRequest(null);
@@ -133,7 +191,10 @@ function DriverDashboard() {
       
       const socket = getSocket();
       if (socket) {
-        socket.emit("emergency_completed", { emergencyId: activeEmergency._id, hospitalId: activeEmergency.assignedHospital._id });
+        socket.emit("emergency_completed", { 
+          emergencyId: activeEmergency._id, 
+          hospitalId: activeEmergency.assignedHospital?._id 
+        });
       }
 
       setActiveEmergency(null);
@@ -169,7 +230,7 @@ function DriverDashboard() {
           </div>
       </header>
       
-      {/* 1. Request Alert (Glassmorphism Modal) */}
+      {/* 1. Request Alert (Glassmorphism Modal with auto-ignore countdown) */}
       {pendingRequest && !isWaiting && (
         <div className="emergency-modal-overlay">
           <div className="emergency-modal" style={{ borderTop: "6px solid var(--danger-color)" }}>
@@ -180,14 +241,16 @@ function DriverDashboard() {
             </div>
             <div className="handshake-buttons">
               <button onClick={handleAcceptRequest} className="btn btn-accept">ACCEPT DISPATCH</button>
-              <button onClick={() => setPendingRequest(null)} className="btn btn-decline">Ignore</button>
+              <button onClick={handleDeclineRequest} className="btn btn-decline">
+                Ignore ({countdown}s)
+              </button>
             </div>
           </div>
         </div>
       )}
 
       {/* 2. Waiting Message: Shows after Accept is clicked */}
-      {isWaiting && !activeEmergency?.assignedHospital && (
+      {isWaiting && (!activeEmergency || !activeEmergency.assignedHospital) && (
         <div className="success-banner" style={{ background: "var(--secondary-color)", color: "var(--primary-color)", borderLeftColor: "var(--primary-color)" }}>
             ⏳ Request Accepted! Waiting for Hospital routing confirmation...
         </div>
@@ -218,8 +281,8 @@ function DriverDashboard() {
             </section>
         </div>
 
-        {/* 3. Navigation Link (Shows only after hospital is assigned) */}
-        {activeEmergency && (
+        {/* 3. Navigation Link (Shows only after hospital is assigned and accepted) */}
+        {activeEmergency && activeEmergency.assignedHospital && (
           <section className="map-card" style={{ marginTop: "30px", padding: 0, overflow: "hidden" }}>
               <div className="map-header" style={{ padding: "20px 30px", marginBottom: 0, borderBottom: "1px solid var(--border-color)", background: "var(--bg-color)" }}>
                   <h3 style={{ color: "var(--danger-color)", margin: 0 }}>📍 Active Navigation: {activeEmergency.patientName}</h3>
@@ -228,11 +291,9 @@ function DriverDashboard() {
                   </button>
               </div>
               <div style={{ padding: "20px" }}>
-                  {activeEmergency.assignedHospital && (
-                      <p style={{ marginBottom: "20px", fontSize: "1.1rem" }}>
-                          <strong>Destination:</strong> {activeEmergency.assignedHospital.name}
-                      </p>
-                  )}
+                  <p style={{ marginBottom: "20px", fontSize: "1.1rem" }}>
+                      <strong>Destination:</strong> {activeEmergency.assignedHospital.name}
+                  </p>
                   <TrackAmbulanceWidget emergencyId={activeEmergency._id} />
               </div>
           </section>

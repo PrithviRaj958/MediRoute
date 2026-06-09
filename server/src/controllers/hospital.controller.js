@@ -1,4 +1,11 @@
 const Hospital = require('../models/hospital.model');
+const User = require('../models/user.model');
+
+const getHospitalIdForUser = async (reqUser) => {
+    if (!reqUser) return null;
+    const user = await User.findById(reqUser.userId);
+    return user?.hospitalId || reqUser.hospitalId || reqUser.id;
+};
 
 
 exports.createHospital = async(req , res) => {
@@ -38,9 +45,9 @@ exports.createHospital = async(req , res) => {
 exports.updateBeds = async(req, res) =>{
     try {
         console.log("User object from token:", req.user);
-        const id = req.user.hospitalId || req.user.id;
+        const id = await getHospitalIdForUser(req.user);
         if (!id) {
-            return res.status(400).json({ message: "No Hospital ID found in token" });
+            return res.status(400).json({ message: "No Hospital assigned to this admin user. Please contact System Admin." });
         }
         const availableBeds = req.body.availableBeds ;
         const action = req.body.action;
@@ -109,7 +116,9 @@ exports.getAllHospitals = async(req, res) => {
 
 exports.getMyHospital = async (req, res) => {
   try {
-    const hospital = await Hospital.findById(req.user.hospitalId);
+    const id = await getHospitalIdForUser(req.user);
+    if (!id) return res.status(400).json({ message: "No Hospital assigned to this admin user." });
+    const hospital = await Hospital.findById(id);
     if (!hospital) return res.status(404).json({ message: "Hospital not found" });
     res.status(200).json(hospital);
   } catch (error) {
@@ -119,8 +128,8 @@ exports.getMyHospital = async (req, res) => {
 
 exports.updateResources = async (req, res) => {
     try {
-        const id = req.user.hospitalId || req.user.id;
-        if (!id) return res.status(400).json({ message: "No Hospital ID found in token" });
+        const id = await getHospitalIdForUser(req.user);
+        if (!id) return res.status(400).json({ message: "No Hospital assigned to this admin user." });
         
         const { icuBeds, bloodSupplyStatus, traumaTeamAvailable } = req.body;
         const hospital = await Hospital.findById(id);
@@ -141,8 +150,8 @@ const Emergency = require('../models/emergency.model');
 
 exports.getHospitalAnalytics = async (req, res) => {
     try {
-        const id = req.user.hospitalId || req.user.id;
-        if (!id) return res.status(400).json({ message: "No Hospital ID found in token" });
+        const id = await getHospitalIdForUser(req.user);
+        if (!id) return res.status(400).json({ message: "No Hospital assigned to this admin user." });
 
         // Calculate start of day
         const startOfDay = new Date();

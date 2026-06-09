@@ -14,8 +14,14 @@ export const initiateSocketConnection = (hospitalId) => {
     }
 
     if (socket && hospitalId) {
-        // Use 'once' or check state to avoid spamming the join event
         socket.emit('join_hospital_room', hospitalId);
+
+        // Reconnect listener to ensure the hospital room is joined upon reconnecting
+        socket.off('connect');
+        socket.on('connect', () => {
+            socket.emit('join_hospital_room', hospitalId);
+            console.log(`Re-joined hospital room: ${hospitalId}`);
+        });
     }
     
     return socket;
